@@ -47,7 +47,11 @@ class StartUpBloc extends Cubit<StartupState> {
       )
       // The bloc is constructed before settings are loaded, so the stored
       // background has to be pushed in once it is known.
-      ..changeBackgroundImage(settingsManager.cache.backgroundImage);
+      ..changeBackgroundImage(settingsManager.cache.backgroundImage)
+      ..changePanelStyle(
+        blur: settingsManager.cache.panelBlur,
+        opacity: settingsManager.cache.panelOpacity,
+      );
 
     await gameAudioManager.preLoad();
 

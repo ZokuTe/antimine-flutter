@@ -6,11 +6,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../common/models/game_settings.dart';
 import '../../../common/utils/build_context_ext.dart';
 import '../../../foundation/i18n/translations.g.dart';
+import '../../../foundation/ui/frosted_theme.dart';
 import '../../../foundation/ui/spacing.dart';
 import '../bloc/settings_bloc.dart';
 import '../models/settings_item.dart';
 import 'settings_action_item.dart';
 import 'settings_panel.dart';
+import 'settings_slider_item.dart';
 
 class SettingsList extends StatelessWidget {
   const SettingsList({super.key, required this.settings});
@@ -85,6 +87,24 @@ class SettingsList extends StatelessWidget {
                         settings.backgroundImage != null
                             ? bloc.clearBackgroundImage
                             : null,
+                  ),
+                  SettingsSliderItem(
+                    title: t.panel_blur,
+                    value: settings.panelBlur,
+                    min: FrostedTheme.minBlur,
+                    max: FrostedTheme.maxBlur,
+                    divisions: (FrostedTheme.maxBlur - FrostedTheme.minBlur)
+                        .round(),
+                    onChanged: bloc.setPanelBlur,
+                  ),
+                  SettingsSliderItem(
+                    title: t.panel_opacity,
+                    value: settings.panelOpacity,
+                    min: FrostedTheme.minOpacity,
+                    max: FrostedTheme.maxOpacity,
+                    divisions: 20,
+                    label: (v) => '${(v * 100).round()}%',
+                    onChanged: bloc.setPanelOpacity,
                   ),
                 ],
               ),

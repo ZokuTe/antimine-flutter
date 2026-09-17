@@ -192,4 +192,6 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	String get background_image_choose => 'Choose';
 	String get background_image_remove => 'Remove';
 	String get background_image_none => 'Theme color';
+	String get panel_blur => 'Panel blur';
+	String get panel_opacity => 'Panel opacity';
 }

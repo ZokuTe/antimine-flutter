@@ -158,5 +158,7 @@
   "backgroundImage": "背景图片",
   "backgroundImageChoose": "选择",
   "backgroundImageRemove": "移除",
-  "backgroundImageNone": "主题颜色"
+  "backgroundImageNone": "主题颜色",
+  "panelBlur": "面板模糊度",
+  "panelOpacity": "面板不透明度"
 }

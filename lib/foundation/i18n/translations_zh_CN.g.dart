@@ -189,4 +189,6 @@ class TranslationsZhCn extends Translations {
 	@override String get background_image_choose => '选择';
 	@override String get background_image_remove => '移除';
 	@override String get background_image_none => '主题颜色';
+	@override String get panel_blur => '面板模糊度';
+	@override String get panel_opacity => '面板不透明度';
 }

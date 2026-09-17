@@ -22,11 +22,11 @@ class ActionCard extends StatelessWidget {
             : const EdgeInsets.only(right: Spacing.x8);
     return Container(
       padding: const EdgeInsets.all(Spacing.x4),
-      // The card floats over the minefield. A backdrop filter cannot sample the
-      // Flame canvas (own RepaintBoundary), so use a translucent frosted panel.
+      // Floats over the minefield, so the frosted backdrop keeps it readable
+      // while still showing the board behind it.
       child: Padding(
         padding: margin,
-        child: FrostedSurface(
+        child: FrostedGlass(
           borderRadius: BorderRadius.circular(Spacing.x12),
           child: Padding(
             padding: const EdgeInsets.all(Spacing.x8),

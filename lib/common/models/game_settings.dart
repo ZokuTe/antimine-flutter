@@ -22,6 +22,8 @@ class GameSettings extends Equatable {
     required this.showContinueGame,
     required this.themeBackground,
     required this.backgroundImage,
+    required this.panelBlur,
+    required this.panelOpacity,
     required this.themeMainColor,
     required this.themeSkin,
     required this.noGuessingMode,
@@ -59,6 +61,8 @@ class GameSettings extends Equatable {
   final bool showContinueGame;
   final int themeBackground;
   final String? backgroundImage;
+  final double panelBlur;
+  final double panelOpacity;
   final int themeMainColor;
   final int themeSkin;
   final Action defaultAction;
@@ -96,6 +100,8 @@ class GameSettings extends Equatable {
     showContinueGame,
     themeBackground,
     backgroundImage,
+    panelBlur,
+    panelOpacity,
     themeMainColor,
     themeSkin,
     defaultAction,
@@ -131,6 +137,8 @@ class GameSettings extends Equatable {
     int? themeBackground,
     String? backgroundImage,
     bool clearBackgroundImage = false,
+    double? panelBlur,
+    double? panelOpacity,
     int? themeMainColor,
     int? themeSkin,
     Action? defaultAction,
@@ -169,6 +177,8 @@ class GameSettings extends Equatable {
           clearBackgroundImage
               ? null
               : (backgroundImage ?? this.backgroundImage),
+      panelBlur: panelBlur ?? this.panelBlur,
+      panelOpacity: panelOpacity ?? this.panelOpacity,
       themeMainColor: themeMainColor ?? this.themeMainColor,
       themeSkin: themeSkin ?? this.themeSkin,
       noGuessingMode: noGuessingMode ?? this.noGuessingMode,
@@ -208,6 +218,8 @@ class GameSettings extends Equatable {
     showContinueGame: false,
     themeBackground: 0,
     backgroundImage: null,
+    panelBlur: 12.0,
+    panelOpacity: 0.55,
     themeMainColor: 0,
     themeSkin: 0,
     defaultAction: Action.open,

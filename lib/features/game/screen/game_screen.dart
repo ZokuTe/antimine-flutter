@@ -89,12 +89,9 @@ class _GameScreenState extends State<GameScreen> {
             ),
             elevation: 0,
             backgroundColor: Colors.transparent,
-            // A backdrop filter cannot sample the Flame canvas (it lives in its
-            // own RepaintBoundary), so this uses a translucent frosted panel
-            // instead of a real blur.
-            flexibleSpace: FrostedSurface(
-              opacity: 0.9,
-              borderRadius: BorderRadius.zero,
+            // The board scrolls behind this bar. FrostedGlass clips the
+            // backdrop filter to the bar's bounds so only this strip blurs.
+            flexibleSpace: FrostedGlass(
               child: SizedBox(
                 height: kToolbarHeight + MediaQuery.paddingOf(context).top,
                 width: double.infinity,

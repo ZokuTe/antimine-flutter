@@ -111,6 +111,16 @@ class SettingsManager {
     }
   }
 
+  void setPanelBlur(double value) async {
+    _cache = _cache?.copyWith(panelBlur: value);
+    await repository.setDouble(SettingsKeys.panelBlur, value);
+  }
+
+  void setPanelOpacity(double value) async {
+    _cache = _cache?.copyWith(panelOpacity: value);
+    await repository.setDouble(SettingsKeys.panelOpacity, value);
+  }
+
   void setThemeMainColor(int value) async {
     _cache = _cache?.copyWith(themeMainColor: value);
     await repository.setInt(SettingsKeys.themeMainColor, value);
@@ -286,6 +296,14 @@ class SettingsManager {
       ),
       backgroundImage: await repository.optString(
         SettingsKeys.backgroundImage,
+      ),
+      panelBlur: await repository.getDouble(
+        SettingsKeys.panelBlur,
+        initial.panelBlur,
+      ),
+      panelOpacity: await repository.getDouble(
+        SettingsKeys.panelOpacity,
+        initial.panelOpacity,
       ),
       themeMainColor: await repository.getInt(
         SettingsKeys.themeMainColor,

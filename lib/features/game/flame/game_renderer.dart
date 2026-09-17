@@ -66,6 +66,12 @@ class GameRenderer extends FlameGame
 
   @override
   Color backgroundColor() {
+    // With a custom background image the canvas must not paint over it. The
+    // board is drawn on top of the app background, which keeps the image
+    // visible behind the minefield.
+    if (settings.backgroundImage != null) {
+      return const Color(0x00000000);
+    }
     return theme.background;
   }
 

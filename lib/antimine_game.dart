@@ -11,6 +11,7 @@ import 'common/global/global_settings_state.dart';
 import 'foundation/i18n/translations.g.dart';
 import 'foundation/io/background_image_manager.dart';
 import 'foundation/ui/app_background.dart';
+import 'foundation/ui/frosted_theme.dart';
 import 'game_routing.dart';
 
 class AntimineGame extends StatefulWidget {
@@ -71,6 +72,12 @@ class AntimineGameState extends State<AntimineGame> {
               // Screens paint no background of their own so the custom
               // background below shows through.
               scaffoldBackgroundColor: Colors.transparent,
+              extensions: [
+                FrostedTheme(
+                  blur: state.panelBlur,
+                  opacity: state.panelOpacity,
+                ),
+              ],
             ),
             supportedLocales: AppLocaleUtils.supportedLocales,
             localizationsDelegates: const [

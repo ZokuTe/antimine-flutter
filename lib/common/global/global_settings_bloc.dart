@@ -14,6 +14,8 @@ class GlobalSettingsBloc extends Cubit<GlobalSettingsState> {
            colorScheme: gameThemeManager.colorScheme,
            locale: settingsManager.cache.locale,
            backgroundImage: settingsManager.cache.backgroundImage,
+           panelBlur: settingsManager.cache.panelBlur,
+           panelOpacity: settingsManager.cache.panelOpacity,
          ),
        );
 
@@ -27,6 +29,11 @@ class GlobalSettingsBloc extends Cubit<GlobalSettingsState> {
 
   void change({required ColorScheme colorScheme, required String? locale}) {
     emit(state.copyWith(colorScheme: colorScheme, locale: locale));
+  }
+
+  /// Updates the blur and tint opacity used by frosted surfaces.
+  void changePanelStyle({double? blur, double? opacity}) {
+    emit(state.copyWith(panelBlur: blur, panelOpacity: opacity));
   }
 
   /// Updates the custom background image. Passing null clears it.

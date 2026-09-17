@@ -22,10 +22,9 @@ class GameDialog extends StatelessWidget {
       alignment: Alignment.center,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
-        // Floating above the game canvas, which a backdrop filter cannot
-        // sample, so a translucent frosted panel is used rather than a blur.
-        child: FrostedSurface(
-          opacity: 0.94,
+        // Floating above the game canvas. FrostedGlass clips the backdrop
+        // filter to the dialog's bounds.
+        child: FrostedGlass(
           borderRadius: BorderRadius.circular(Spacing.x16),
           child: Material(
             color: Colors.transparent,

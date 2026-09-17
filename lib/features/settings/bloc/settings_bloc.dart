@@ -113,6 +113,20 @@ class SettingsBloc extends Cubit<SettingsState> {
     emit(state.copyWith(settings: settingsManager.cache));
   }
 
+  /// Updates the blur applied to frosted surfaces.
+  void setPanelBlur(double value) {
+    settingsManager.setPanelBlur(value);
+    globalSettingsBloc.changePanelStyle(blur: value);
+    emit(state.copyWith(settings: settingsManager.cache));
+  }
+
+  /// Updates the tint opacity of frosted surfaces.
+  void setPanelOpacity(double value) {
+    settingsManager.setPanelOpacity(value);
+    globalSettingsBloc.changePanelStyle(opacity: value);
+    emit(state.copyWith(settings: settingsManager.cache));
+  }
+
   void reset() async {
     settingsManager
       ..setVibration(GameSettings.initial.vibration)

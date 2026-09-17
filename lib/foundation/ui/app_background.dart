@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+
+import 'frosted_theme.dart';
 
 /// Paints the game background: the theme colour, or a user-selected image with
 /// a scrim over it.
@@ -30,27 +33,36 @@ class AppBackground extends StatelessWidget {
       return ColoredBox(color: fallbackColor, child: child);
     }
 
-    final brightness = Theme.of(context).colorScheme.brightness;
-    // Light themes need a light scrim (and vice versa) for the on-surface text
-    // to stay readable.
-    final scrim =
-        brightness == Brightness.dark
-            ? Colors.black.withValues(alpha: 0.55)
-            : Colors.white.withValues(alpha: 0.72);
+    final theme = FrostedTheme.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    // The scrim is what keeps text legible over an arbitrary photo, so it reuses
+    // the panel opacity control: 0% leaves the image untouched, 100% hides it.
+    final scrim = colorScheme.surface.withValues(alpha: theme.opacity);
+
+    Widget background = Image.file(
+      file,
+      fit: BoxFit.cover,
+      // Decode at roughly screen resolution. A full-resolution photo can be
+      // tens of megabytes in memory, which risks killing the app.
+      cacheWidth: _decodeWidth(context),
+      gaplessPlayback: true,
+      errorBuilder: (_, _, _) => ColoredBox(color: fallbackColor),
+    );
+
+    // Blur the image itself, not the backdrop: a backdrop filter cannot sample
+    // this far down the tree, and blurring here also softens the photo so the
+    // UI on top stays readable.
+    if (theme.blur > 0 && !MediaQuery.disableAnimationsOf(context)) {
+      background = ImageFiltered(
+        imageFilter: ImageFilter.blur(sigmaX: theme.blur, sigmaY: theme.blur),
+        child: background,
+      );
+    }
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.file(
-          file,
-          fit: BoxFit.cover,
-          // Decode at roughly screen resolution. A full-resolution photo can be
-          // tens of megabytes in memory, which risks killing the app.
-          cacheWidth: _decodeWidth(context),
-          gaplessPlayback: true,
-          errorBuilder:
-              (_, _, _) => ColoredBox(color: fallbackColor),
-        ),
+        background,
         ColoredBox(color: scrim),
         child,
       ],

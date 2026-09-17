@@ -158,5 +158,7 @@
   "backgroundImage": "Background Image",
   "backgroundImageChoose": "Choose",
   "backgroundImageRemove": "Remove",
-  "backgroundImageNone": "Theme color"
+  "backgroundImageNone": "Theme color",
+  "panelBlur": "Panel blur",
+  "panelOpacity": "Panel opacity"
 }
