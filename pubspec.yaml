@@ -41,6 +41,7 @@ dependencies:
   wakelock_plus: ^1.2.10
   slang: ^4.5.0
   slang_flutter: ^4.5.0
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_test:

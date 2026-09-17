@@ -16,7 +16,11 @@ class SettingsRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<SettingsBloc>(
       create: (BuildContext context) {
-        return SettingsBloc(settingsManager: context.read())..loadSettings();
+        return SettingsBloc(
+          settingsManager: context.read(),
+          backgroundImageManager: context.read(),
+          globalSettingsBloc: context.read(),
+        )..loadSettings();
       },
       child: SettingsScreen(params: params),
     );

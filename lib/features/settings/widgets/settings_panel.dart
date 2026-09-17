@@ -6,10 +6,18 @@ import '../models/settings_item.dart';
 import 'settings_switch_item.dart';
 
 class SettingsPanel extends StatelessWidget {
-  const SettingsPanel({super.key, required this.title, required this.children});
+  const SettingsPanel({
+    super.key,
+    required this.title,
+    required this.children,
+    this.extra,
+  });
 
   final String title;
   final List<SettingsItem> children;
+
+  /// Rows that are not simple switches, appended after [children].
+  final List<Widget>? extra;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +50,7 @@ class SettingsPanel extends StatelessWidget {
                   onChanged: e.onChanged,
                 ),
               ),
+              ...?extra,
             ],
           ),
         ),

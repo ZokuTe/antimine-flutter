@@ -1,14 +1,22 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../common/global/global_settings_bloc.dart';
 import '../../../common/models/game_settings.dart';
 import '../../../common/settings/settings_manager.dart';
+import '../../../foundation/io/background_image_manager.dart';
 import 'settings_state.dart';
 
 class SettingsBloc extends Cubit<SettingsState> {
-  SettingsBloc({required this.settingsManager}) : super(const SettingsState());
+  SettingsBloc({
+    required this.settingsManager,
+    required this.backgroundImageManager,
+    required this.globalSettingsBloc,
+  }) : super(const SettingsState());
 
   final SettingsManager settingsManager;
+  final BackgroundImageManager backgroundImageManager;
+  final GlobalSettingsBloc globalSettingsBloc;
 
   void loadSettings() {
     final settings = settingsManager.cache;
@@ -82,6 +90,26 @@ class SettingsBloc extends Cubit<SettingsState> {
 
   void setNoGuessingMode(bool value) {
     settingsManager.setNoGuessingMode(value);
+    emit(state.copyWith(settings: settingsManager.cache));
+  }
+
+  /// Opens the system image picker and stores the chosen image as the app
+  /// background. A cancelled pick leaves the current setting untouched.
+  Future<void> pickBackgroundImage() async {
+    final name = await backgroundImageManager.pickImage();
+    if (name == null) {
+      return;
+    }
+    settingsManager.setBackgroundImage(name);
+    globalSettingsBloc.changeBackgroundImage(name);
+    emit(state.copyWith(settings: settingsManager.cache));
+  }
+
+  /// Restores the theme colour as the background.
+  Future<void> clearBackgroundImage() async {
+    await backgroundImageManager.removeImage();
+    settingsManager.setBackgroundImage(null);
+    globalSettingsBloc.changeBackgroundImage(null);
     emit(state.copyWith(settings: settingsManager.cache));
   }
 

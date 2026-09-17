@@ -154,5 +154,9 @@
   "code": "代码号",
   "image": "图像",
   "free": "免费",
-  "restorePurchase": "恢复购买"
+  "restorePurchase": "恢复购买",
+  "backgroundImage": "背景图片",
+  "backgroundImageChoose": "选择",
+  "backgroundImageRemove": "移除",
+  "backgroundImageNone": "主题颜色"
 }

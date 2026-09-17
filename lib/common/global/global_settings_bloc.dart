@@ -13,6 +13,7 @@ class GlobalSettingsBloc extends Cubit<GlobalSettingsState> {
          GlobalSettingsState(
            colorScheme: gameThemeManager.colorScheme,
            locale: settingsManager.cache.locale,
+           backgroundImage: settingsManager.cache.backgroundImage,
          ),
        );
 
@@ -26,5 +27,14 @@ class GlobalSettingsBloc extends Cubit<GlobalSettingsState> {
 
   void change({required ColorScheme colorScheme, required String? locale}) {
     emit(state.copyWith(colorScheme: colorScheme, locale: locale));
+  }
+
+  /// Updates the custom background image. Passing null clears it.
+  void changeBackgroundImage(String? backgroundImage) {
+    emit(
+      backgroundImage == null
+          ? state.copyWith(clearBackgroundImage: true)
+          : state.copyWith(backgroundImage: backgroundImage),
+    );
   }
 }

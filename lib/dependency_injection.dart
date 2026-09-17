@@ -21,6 +21,7 @@ import 'features/game/logic/minefield_solver.dart';
 import 'features/game/logic/native_minefield_creator.dart';
 import 'features/game/logic/random_minefield_creator.dart';
 import 'features/game/logic/randomness_manager.dart';
+import 'foundation/io/background_image_manager.dart';
 import 'foundation/io/save_file_manager.dart';
 import 'foundation/io/share_image_manager.dart';
 import 'foundation/io/stats_file_manager.dart';
@@ -95,6 +96,7 @@ class DependencyInjection extends StatelessWidget {
               (context) =>
                   SaveFileManager(uuidGenerator: context.read<UuidGenerator>()),
         ),
+        Provider<BackgroundImageManager>(create: (_) => BackgroundImageManager()),
         Provider<ShareImageManager>(create: (context) => ShareImageManager()),
         Provider<DimensionManager>(create: (context) => DimensionManager()),
         Provider<MinefieldManager>(

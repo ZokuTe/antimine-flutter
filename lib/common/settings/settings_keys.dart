@@ -35,6 +35,7 @@ class SettingsKeys {
   static const String requestPlayGames = 'request_play_games';
   static const String showContinueGame = 'show_continue_game';
   static const String themeBackground = 'theme_background';
+  static const String backgroundImage = 'background_image';
   static const String themeMainColor = 'theme_main_color';
   static const String themeSkin = 'theme_skin';
   static const String noGuessingMode = 'no_guessing_mode';

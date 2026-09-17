@@ -40,10 +40,14 @@ class StartUpBloc extends Cubit<StartupState> {
     );
 
     gameThemeManager.init();
-    globalSettingsBloc.change(
-      colorScheme: gameThemeManager.colorScheme,
-      locale: settingsManager.cache.locale,
-    );
+    globalSettingsBloc
+      ..change(
+        colorScheme: gameThemeManager.colorScheme,
+        locale: settingsManager.cache.locale,
+      )
+      // The bloc is constructed before settings are loaded, so the stored
+      // background has to be pushed in once it is known.
+      ..changeBackgroundImage(settingsManager.cache.backgroundImage);
 
     await gameAudioManager.preLoad();
 

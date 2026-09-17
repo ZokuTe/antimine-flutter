@@ -9,6 +9,7 @@ import '../../../foundation/i18n/translations.g.dart';
 import '../../../foundation/ui/spacing.dart';
 import '../bloc/settings_bloc.dart';
 import '../models/settings_item.dart';
+import 'settings_action_item.dart';
 import 'settings_panel.dart';
 
 class SettingsList extends StatelessWidget {
@@ -65,6 +66,25 @@ class SettingsList extends StatelessWidget {
                       _refreshImmersiveMode(value);
                       bloc.setImmersiveMode(value);
                     },
+                  ),
+                ],
+              ),
+              const SizedBox(height: Spacing.x16),
+              SettingsPanel(
+                title: t.appearance,
+                children: const [],
+                extra: [
+                  SettingsActionItem(
+                    title: t.background_image,
+                    subtitle:
+                        settings.backgroundImage ?? t.background_image_none,
+                    primaryLabel: t.background_image_choose,
+                    onPressed: bloc.pickBackgroundImage,
+                    secondaryLabel: t.background_image_remove,
+                    onSecondaryPressed:
+                        settings.backgroundImage != null
+                            ? bloc.clearBackgroundImage
+                            : null,
                   ),
                 ],
               ),

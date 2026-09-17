@@ -97,6 +97,20 @@ class SettingsManager {
     await repository.setInt(SettingsKeys.themeBackground, value);
   }
 
+  /// Stores the file name of the custom background image, or clears it when
+  /// [value] is null.
+  void setBackgroundImage(String? value) async {
+    _cache =
+        value == null
+            ? _cache?.copyWith(clearBackgroundImage: true)
+            : _cache?.copyWith(backgroundImage: value);
+    if (value == null) {
+      await repository.remove(SettingsKeys.backgroundImage);
+    } else {
+      await repository.setString(SettingsKeys.backgroundImage, value);
+    }
+  }
+
   void setThemeMainColor(int value) async {
     _cache = _cache?.copyWith(themeMainColor: value);
     await repository.setInt(SettingsKeys.themeMainColor, value);
@@ -269,6 +283,9 @@ class SettingsManager {
       themeBackground: await repository.getInt(
         SettingsKeys.themeBackground,
         initial.themeBackground,
+      ),
+      backgroundImage: await repository.optString(
+        SettingsKeys.backgroundImage,
       ),
       themeMainColor: await repository.getInt(
         SettingsKeys.themeMainColor,
