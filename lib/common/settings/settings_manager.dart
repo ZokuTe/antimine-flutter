@@ -294,9 +294,7 @@ class SettingsManager {
         SettingsKeys.themeBackground,
         initial.themeBackground,
       ),
-      backgroundImage: await repository.optString(
-        SettingsKeys.backgroundImage,
-      ),
+      backgroundImage: await repository.optString(SettingsKeys.backgroundImage),
       panelBlur: await repository.getDouble(
         SettingsKeys.panelBlur,
         initial.panelBlur,

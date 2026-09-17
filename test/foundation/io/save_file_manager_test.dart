@@ -33,8 +33,9 @@ void main() {
   setUp(() async {
     saveDirectory = await Directory.systemTemp.createTemp('antimine_saves');
     for (final name in fixtureNames) {
-      await File('test/helpers/fixtures/$name')
-          .copy('${saveDirectory.path}/$name');
+      await File(
+        'test/helpers/fixtures/$name',
+      ).copy('${saveDirectory.path}/$name');
     }
     saveFileManager = SaveFileManager(
       maxSaves: savesN,

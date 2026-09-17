@@ -96,7 +96,9 @@ class DependencyInjection extends StatelessWidget {
               (context) =>
                   SaveFileManager(uuidGenerator: context.read<UuidGenerator>()),
         ),
-        Provider<BackgroundImageManager>(create: (_) => BackgroundImageManager()),
+        Provider<BackgroundImageManager>(
+          create: (_) => BackgroundImageManager(),
+        ),
         Provider<ShareImageManager>(create: (context) => ShareImageManager()),
         Provider<DimensionManager>(create: (context) => DimensionManager()),
         Provider<MinefieldManager>(

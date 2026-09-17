@@ -64,9 +64,8 @@ class AntimineGameState extends State<AntimineGame> {
           child: MaterialApp.router(
             title: t.app_name,
             debugShowCheckedModeBanner: false,
-            locale: languageCode != null
-                ? Locale(languageCode, countryCode)
-                : null,
+            locale:
+                languageCode != null ? Locale(languageCode, countryCode) : null,
             theme: ThemeData(
               colorScheme: state.colorScheme,
               useMaterial3: true,
@@ -79,7 +78,9 @@ class AntimineGameState extends State<AntimineGame> {
               // Screens that want a blurred bar add it themselves.
               appBarTheme: AppBarTheme(
                 backgroundColor:
-                    hasBackground ? Colors.transparent : state.colorScheme.surface,
+                    hasBackground
+                        ? Colors.transparent
+                        : state.colorScheme.surface,
                 surfaceTintColor: Colors.transparent,
                 elevation: 0,
                 scrolledUnderElevation: 0,
@@ -139,4 +140,3 @@ class AntimineGameState extends State<AntimineGame> {
     );
   }
 }
-

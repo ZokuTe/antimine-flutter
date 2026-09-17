@@ -91,16 +91,17 @@ class _GameScreenState extends State<GameScreen> {
             // Blur only this strip, and only while a background image is set.
             // Without one there is nothing behind the bar worth softening and
             // the bar uses the opaque surface colour instead.
-            flexibleSpace: widget.settings.backgroundImage != null
-                ? FrostedGlass(
-                    opacity: 0,
-                    child: SizedBox(
-                      height:
-                          kToolbarHeight + MediaQuery.paddingOf(context).top,
-                      width: double.infinity,
-                    ),
-                  )
-                : null,
+            flexibleSpace:
+                widget.settings.backgroundImage != null
+                    ? FrostedGlass(
+                      opacity: 0,
+                      child: SizedBox(
+                        height:
+                            kToolbarHeight + MediaQuery.paddingOf(context).top,
+                        width: double.infinity,
+                      ),
+                    )
+                    : null,
           ),
           extendBody: true,
           bottomNavigationBar:

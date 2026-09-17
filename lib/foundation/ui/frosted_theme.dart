@@ -21,10 +21,7 @@ class FrostedTheme extends ThemeExtension<FrostedTheme> {
   static const double minOpacity = 0.0;
   static const double maxOpacity = 1.0;
 
-  static const FrostedTheme fallback = FrostedTheme(
-    blur: 12.0,
-    opacity: 0.55,
-  );
+  static const FrostedTheme fallback = FrostedTheme(blur: 12.0, opacity: 0.55);
 
   /// Reads the current values, or [fallback] when the theme has none.
   static FrostedTheme of(BuildContext context) {

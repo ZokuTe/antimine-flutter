@@ -97,8 +97,8 @@ class SettingsList extends StatelessWidget {
                       value: settings.panelBlur,
                       min: FrostedTheme.minBlur,
                       max: FrostedTheme.maxBlur,
-                      divisions: (FrostedTheme.maxBlur - FrostedTheme.minBlur)
-                          .round(),
+                      divisions:
+                          (FrostedTheme.maxBlur - FrostedTheme.minBlur).round(),
                       onChanged: bloc.setPanelBlur,
                     ),
                     SettingsSliderItem(

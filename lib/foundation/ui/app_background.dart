@@ -61,11 +61,7 @@ class AppBackground extends StatelessWidget {
 
     return Stack(
       fit: StackFit.expand,
-      children: [
-        background,
-        ColoredBox(color: scrim),
-        child,
-      ],
+      children: [background, ColoredBox(color: scrim), child],
     );
   }
 

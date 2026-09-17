@@ -33,7 +33,12 @@ jobs:
         run: flutter pub get
 
       - name: Code Style
-        run: dart format --set-exit-if-changed .
+        # Generated files are excluded: slang writes translations with its own
+        # formatting, so `dart format` would rewrite them on every run and
+        # `dart run slang` would undo it. Handwritten sources must be formatted.
+        run: |
+          find lib test -name '*.dart' ! -name '*.g.dart' -print0 \
+            | xargs -0 dart format --output=none --set-exit-if-changed
 
       - name: Lint
         run: flutter analyze .

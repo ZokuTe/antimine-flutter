@@ -41,14 +41,15 @@ class SettingsActionItem extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.x16),
       dense: true,
       title: Text(title),
-      subtitle: subtitle != null
-          ? Text(
-              subtitle!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall,
-            )
-          : null,
+      subtitle:
+          subtitle != null
+              ? Text(
+                subtitle!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall,
+              )
+              : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
