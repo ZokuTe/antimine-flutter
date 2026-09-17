@@ -37,9 +37,32 @@ struct set_store
 
 typedef std::function<int(mine_context &, std::size_t, std::size_t)> open_function;
 
-typedef std::function<void(mine_context &, std::basic_string<std::int8_t> &,
+typedef std::function<void(mine_context &, std::string &,
                            int, int, int)>
     perturbation_function;
+
+/*
+ * Solver grid cell values. The grid is a std::string used as a byte
+ * buffer, so every value is stored as a char. These constants keep the
+ * original numeric encodings while making the (implementation-defined)
+ * signedness of char irrelevant to comparisons. Values are chosen to
+ * match the historical std::basic_string<std::int8_t> encoding:
+ *   GRID_UNKNOWN = -2, GRID_MINE = -1, and 0..8 for adjacent mine counts.
+ */
+static constexpr char GRID_UNKNOWN = static_cast<char>(-2);
+static constexpr char GRID_MINE = static_cast<char>(-1);
+
+/*
+ * Reads a solver grid cell as a signed value. char is unsigned on some
+ * platforms (e.g. arm64), so reading a cell through char alone would make
+ * GRID_UNKNOWN/GRID_MINE positive and break order comparisons such as
+ * `cell >= 0`. Every place that interprets a cell arithmetically must go
+ * through this accessor to keep the original signed semantics.
+ */
+static inline int grid_at(const std::string &grid, std::size_t index)
+{
+  return static_cast<signed char>(grid[index]);
+}
 
 static int set_comparator(void *av, void *bv)
 {
@@ -130,7 +153,7 @@ int mine_open(mine_context &ctx, std::size_t x, std::size_t y)
 
 void mine_perturbation(
     mine_context &ctx,
-    std::basic_string<std::int8_t> &grid,
+    std::string &grid,
     int setx,
     int sety,
     int mask)
@@ -198,13 +221,13 @@ void mine_perturbation(
        * If this square is in the input set, also don't put
        * it on the list!
        */
-      if ((mask == 0 && grid[y * ctx.width + x] == -2) ||
+      if ((mask == 0 && grid[y * ctx.width + x] == GRID_UNKNOWN) ||
           (x >= setx && x < setx + 3 &&
            y >= sety && y < sety + 3 &&
            mask & (1 << ((y - sety) * 3 + (x - setx)))))
         continue;
 
-      if (grid[y * ctx.width + x] != -2)
+      if (grid[y * ctx.width + x] != GRID_UNKNOWN)
       {
         current.type = 3; /* known square */
       }
@@ -224,7 +247,7 @@ void mine_perturbation(
           {
             if (x + dx >= 0 && x + dx < ctx.width &&
                 y + dy >= 0 && y + dy < ctx.height &&
-                grid[(y + dy) * ctx.width + (x + dx)] != -2)
+                grid[(y + dy) * ctx.width + (x + dx)] != GRID_UNKNOWN)
             {
               current.type = 1;
               break;
@@ -273,7 +296,7 @@ void mine_perturbation(
     {
       for (int x = 0; x < ctx.width; x++)
       {
-        if (grid[y * ctx.width + x] == -2)
+        if (grid[y * ctx.width + x] == GRID_UNKNOWN)
         {
           if (ctx.grid[y * ctx.width + x])
           {
@@ -363,7 +386,7 @@ void mine_perturbation(
       {
         for (int x = 0; x < ctx.width; x++)
         {
-          if (grid[y * ctx.width + x] == -2)
+          if (grid[y * ctx.width + x] == GRID_UNKNOWN)
           {
             if (!ctx.grid[y * ctx.width + x])
             {
@@ -466,7 +489,7 @@ void mine_perturbation(
     {
       for (std::size_t x = 0; x < ctx.width; x++)
       {
-        if (grid[y * ctx.width + x] == -2)
+        if (grid[y * ctx.width + x] == GRID_UNKNOWN)
         {
           int current_value = (ctx.grid[y * ctx.width + x] ? +1 : -1);
           if (delta_set == -current_value)
@@ -504,7 +527,7 @@ void mine_perturbation(
       {
         if (x + dx >= 0 && x + dx < ctx.width &&
             y + dy >= 0 && y + dy < ctx.height &&
-            grid[(y + dy) * ctx.width + (x + dx)] != -2)
+            grid[(y + dy) * ctx.width + (x + dx)] != GRID_UNKNOWN)
         {
           if (dx == 0 && dy == 0)
           {
@@ -515,7 +538,7 @@ void mine_perturbation(
              */
             if (delta > 0)
             {
-              grid[y * ctx.width + x] = -1;
+              grid[y * ctx.width + x] = GRID_MINE;
             }
             else
             {
@@ -535,7 +558,7 @@ void mine_perturbation(
               grid[y * ctx.width + x] = mine_count;
             }
           }
-          else if (grid[(y + dy) * ctx.width + (x + dx)] >= 0)
+          else if (grid_at(grid, (y + dy) * ctx.width + (x + dx)) >= 0)
           {
             grid[(y + dy) * ctx.width + (x + dx)] += delta;
           }
@@ -769,7 +792,7 @@ static int bitcount16(int inword)
 }
 
 void known_squares(int w, int h, std::list<std::size_t> &square_todo,
-                   std::basic_string<std::int8_t> &grid,
+                   std::string &grid,
                    const open_function &open, mine_context &openctx,
                    int x, int y, int mask, bool mine)
 {
@@ -789,17 +812,17 @@ void known_squares(int w, int h, std::list<std::size_t> &square_todo,
          * known, in which case we don't try to add it to
          * the list twice.
          */
-        if (grid[i] == -2)
+        if (grid[i] == GRID_UNKNOWN)
         {
 
           if (mine)
           {
-            grid[i] = -1; /* and don't open it! */
+            grid[i] = GRID_MINE; /* and don't open it! */
           }
           else
           {
             grid[i] = open(openctx, x + xx, y + yy);
-            assert(grid[i] != -1); /* *bang* */
+            assert(grid[i] != GRID_MINE); /* *bang* */
           }
 
           square_todo.push_back(i);
@@ -811,7 +834,7 @@ void known_squares(int w, int h, std::list<std::size_t> &square_todo,
 
 int solve_minefield(
     mine_context &context,
-    std::basic_string<std::int8_t> &grid,
+    std::string &grid,
     const open_function &open,
     const perturbation_function &perturb,
     std::mt19937 &random)
@@ -833,7 +856,7 @@ int solve_minefield(
     for (std::size_t x = 0; x < context.width; x++)
     {
       std::size_t index = y * context.width + x;
-      if (grid[index] != -2)
+      if (grid[index] != GRID_UNKNOWN)
       {
         square_todo.push_back(index);
       }
@@ -856,11 +879,11 @@ int solve_minefield(
       std::size_t x = index % context.width;
       std::size_t y = index / context.width;
 
-      if (grid[index] >= 0)
+      if (grid_at(grid, index) >= 0)
       {
         // Empty square. Construct the set of non-known squares
         // around this one, and determine its mine count.
-        std::int8_t mines = grid[index];
+        int mines = grid_at(grid, index);
         int bit = 1;
         int val = 0;
         for (int dy = -1; dy <= +1; dy++)
@@ -872,11 +895,11 @@ int solve_minefield(
             {
               /* ignore this one */;
             }
-            else if (grid[index + dy * context.width + dx] == -1)
+            else if (grid[index + dy * context.width + dx] == GRID_MINE)
             {
               mines--;
             }
-            else if (grid[index + dy * context.width + dx] == -2)
+            else if (grid[index + dy * context.width + dx] == GRID_UNKNOWN)
             {
               val |= bit;
             }
@@ -911,7 +934,7 @@ int solve_minefield(
           /*
            * Compute the new mine count.
            */
-          newmines = s->mines - (grid[index] == -1);
+          newmines = s->mines - (grid[index] == GRID_MINE);
 
           /*
            * Insert the new set into the collection,
@@ -1071,9 +1094,9 @@ int solve_minefield(
       minesleft = context.mines;
       for (i = 0; i < context.size; i++)
       {
-        if (grid[i] == -1)
+        if (grid[i] == GRID_MINE)
           minesleft--;
-        else if (grid[i] == -2)
+        else if (grid[i] == GRID_UNKNOWN)
           squaresleft++;
       }
 
@@ -1095,7 +1118,7 @@ int solve_minefield(
       if (minesleft == 0 || minesleft == squaresleft)
       {
         for (i = 0; i < context.size; i++)
-          if (grid[i] == -2)
+          if (grid[i] == GRID_UNKNOWN)
             known_squares(context.width, context.height, square_todo, grid, open,
                           context,
                           i % context.width, i / context.width, 1, minesleft != 0);
@@ -1219,7 +1242,7 @@ int solve_minefield(
                * mark them.
                */
               for (std::size_t i = 0; i < context.size; i++)
-                if (grid[i] == -2)
+                if (grid[i] == GRID_UNKNOWN)
                 {
                   bool outside = true;
                   std::size_t y = i / context.width;
@@ -1330,7 +1353,7 @@ int solve_minefield(
         for (i = 0; i < result.size(); i++)
         {
           if (result[i].delta < 0 &&
-              grid[result[i].y * context.width + result[i].x] != -2)
+              grid[result[i].y * context.width + result[i].x] != GRID_UNKNOWN)
           {
             auto index = result[i].y * context.width + result[i].x;
             square_todo.push_back(index);
@@ -1369,7 +1392,7 @@ int solve_minefield(
   {
     for (std::size_t x = 0; x < context.width; x++)
     {
-      if (grid[y * context.width + x] == -2)
+      if (grid[y * context.width + x] == GRID_UNKNOWN)
       {
         nperturbs = -1; /* failed to complete */
         break;
@@ -1403,15 +1426,17 @@ bool try_solve_minefield(mine_context &context, std::mt19937 &random)
    * We bypass this bit if we're not after a unique grid.
    */
 
-  std::basic_string<std::int8_t> solve_grid(context.size, -2);
+  std::string solve_grid(context.size, GRID_UNKNOWN);
 
   while (true)
   {
-    std::fill(solve_grid.begin(), solve_grid.end(), -2);
+    std::fill(solve_grid.begin(), solve_grid.end(), GRID_UNKNOWN);
 
-    solve_grid[context.start_y * context.width + context.start_x] = mine_open(context,
-                                                                              context.start_x,
-                                                                              context.start_y);
+    solve_grid[context.start_y * context.width + context.start_x] =
+        static_cast<char>(mine_open(context,
+                                    context.start_x,
+                                    context.start_y));
+
     assert(solve_grid[context.start_y * context.width + context.start_x] ==
            0); /* by deliberate arrangement */
 

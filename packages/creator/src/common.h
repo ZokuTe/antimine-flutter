@@ -23,7 +23,7 @@ struct perturbation
 
 struct mine_context
 {
-    std::basic_string<std::size_t> &grid;
+    std::string &grid;
     std::vector<square> square_list;
     std::vector<std::size_t> to_fill;
     std::vector<std::size_t> to_empty;

@@ -13,7 +13,7 @@ std::string new_mine_layout(
     std::size_t y_position,
     std::mt19937 &random)
 {
-    std::basic_string<std::size_t> grid;
+    std::string grid;
 
     if (slice_width > 0)
     {
@@ -41,7 +41,7 @@ std::string new_mine_layout(
     return minefield_to_string(grid);
 }
 
-std::string minefield_to_string(const std::basic_string<std::size_t> &grid)
+std::string minefield_to_string(const std::string &grid)
 {
     std::string result(grid.size(), '0');
 
@@ -60,7 +60,7 @@ std::string minefield_to_string(const std::basic_string<std::size_t> &grid)
     return result;
 }
 
-std::basic_string<std::size_t> generate_safe_minefield_sliced(
+std::string generate_safe_minefield_sliced(
     std::size_t slice_width,
     std::size_t width,
     std::size_t height,
@@ -73,7 +73,7 @@ std::basic_string<std::size_t> generate_safe_minefield_sliced(
     const std::size_t quad_mine = mines_amount / quads;
     const std::size_t size = width * height + quads;
 
-    auto grid = std::basic_string<std::size_t>();
+    auto grid = std::string();
     grid.reserve(size);
 
     for (std::size_t i = 0; i < quads; i++)
@@ -101,7 +101,7 @@ std::basic_string<std::size_t> generate_safe_minefield_sliced(
     return grid;
 }
 
-std::basic_string<std::size_t> generate_safe_minefield(
+std::string generate_safe_minefield(
     std::size_t width,
     std::size_t height,
     std::size_t mines_amount,
@@ -110,7 +110,7 @@ std::basic_string<std::size_t> generate_safe_minefield(
     bool safe_border,
     std::mt19937 &random)
 {
-    std::basic_string<std::size_t> result;
+    std::string result;
 
     bool success;
     int tries = 0;
@@ -208,7 +208,7 @@ std::size_t calc_safe_area(
     return (right - left + 1) * (bottom - top + 1);
 }
 
-std::basic_string<std::size_t> generate_random_minefield_with_safe_area(
+std::string generate_random_minefield_with_safe_area(
     std::size_t width,
     std::size_t height,
     std::size_t mines_amount,
@@ -218,7 +218,7 @@ std::basic_string<std::size_t> generate_random_minefield_with_safe_area(
     std::mt19937 &random)
 {
     const std::size_t size = width * height;
-    std::basic_string<std::size_t> result = std::basic_string<std::size_t>(size, 0);
+    std::string result = std::string(size, 0);
 
     std::size_t current_mines = 0;
     std::size_t remain_empty = size;
