@@ -30,4 +30,9 @@ analyzer:
     - '**.g.dart'
     - '**.gr.dart'
     - 'packages/creator/**'
+    - build/**
+    - android/**
+    - web/**
+    - windows/**
+    - linux/**
 
