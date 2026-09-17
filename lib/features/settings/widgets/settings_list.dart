@@ -88,24 +88,29 @@ class SettingsList extends StatelessWidget {
                             ? bloc.clearBackgroundImage
                             : null,
                   ),
-                  SettingsSliderItem(
-                    title: t.panel_blur,
-                    value: settings.panelBlur,
-                    min: FrostedTheme.minBlur,
-                    max: FrostedTheme.maxBlur,
-                    divisions: (FrostedTheme.maxBlur - FrostedTheme.minBlur)
-                        .round(),
-                    onChanged: bloc.setPanelBlur,
-                  ),
-                  SettingsSliderItem(
-                    title: t.panel_opacity,
-                    value: settings.panelOpacity,
-                    min: FrostedTheme.minOpacity,
-                    max: FrostedTheme.maxOpacity,
-                    divisions: 20,
-                    label: (v) => '${(v * 100).round()}%',
-                    onChanged: bloc.setPanelOpacity,
-                  ),
+                  // Blur and opacity only affect the background image, so they
+                  // are hidden until one is chosen. Showing them would offer a
+                  // control that changes nothing.
+                  if (settings.backgroundImage != null) ...[
+                    SettingsSliderItem(
+                      title: t.panel_blur,
+                      value: settings.panelBlur,
+                      min: FrostedTheme.minBlur,
+                      max: FrostedTheme.maxBlur,
+                      divisions: (FrostedTheme.maxBlur - FrostedTheme.minBlur)
+                          .round(),
+                      onChanged: bloc.setPanelBlur,
+                    ),
+                    SettingsSliderItem(
+                      title: t.panel_opacity,
+                      value: settings.panelOpacity,
+                      min: FrostedTheme.minOpacity,
+                      max: FrostedTheme.maxOpacity,
+                      divisions: 20,
+                      label: (v) => '${(v * 100).round()}%',
+                      onChanged: bloc.setPanelOpacity,
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: Spacing.x16),

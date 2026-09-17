@@ -42,6 +42,7 @@ class AntimineGameState extends State<AntimineGame> {
     return BlocBuilder<GlobalSettingsBloc, GlobalSettingsState>(
       builder: (context, state) {
         final locale = state.locale;
+        final hasBackground = state.backgroundImage != null;
         final parts = locale?.split(RegExp('[_-]'));
         final languageCode = parts?.firstOrNull;
         final countryCode = parts != null && parts.length > 1 ? parts[1] : null;
@@ -72,19 +73,26 @@ class AntimineGameState extends State<AntimineGame> {
               // Screens paint no background of their own so the custom
               // background below shows through.
               scaffoldBackgroundColor: Colors.transparent,
-              // App bars are transparent by default so the background image
-              // shows through everywhere, not just on the game screen.
-              // Individual screens that need a blurred bar add it themselves.
-              appBarTheme: const AppBarTheme(
-                backgroundColor: Colors.transparent,
+              // App bars are transparent only while a background image is set,
+              // so the image shows through. Without one they keep the surface
+              // colour, which is what the screens originally looked like.
+              // Screens that want a blurred bar add it themselves.
+              appBarTheme: AppBarTheme(
+                backgroundColor:
+                    hasBackground ? Colors.transparent : state.colorScheme.surface,
                 surfaceTintColor: Colors.transparent,
                 elevation: 0,
                 scrolledUnderElevation: 0,
               ),
               extensions: [
+                // The blur and opacity settings only describe how the
+                // background image shows through. Without an image the
+                // surfaces fall back to an opaque fill: there is nothing to
+                // reveal, and a translucent panel over the board would only
+                // hurt legibility.
                 FrostedTheme(
-                  blur: state.panelBlur,
-                  opacity: state.panelOpacity,
+                  blur: hasBackground ? state.panelBlur : 0,
+                  opacity: hasBackground ? state.panelOpacity : 1.0,
                 ),
               ],
             ),

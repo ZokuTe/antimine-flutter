@@ -88,16 +88,19 @@ class _GameScreenState extends State<GameScreen> {
               ],
             ),
             elevation: 0,
-            // Blur only this strip. No tint: the app background already carries
-            // the scrim, so adding another would make the bar darker than the
-            // rest of the screen.
-            flexibleSpace: FrostedGlass(
-              opacity: 0,
-              child: SizedBox(
-                height: kToolbarHeight + MediaQuery.paddingOf(context).top,
-                width: double.infinity,
-              ),
-            ),
+            // Blur only this strip, and only while a background image is set.
+            // Without one there is nothing behind the bar worth softening and
+            // the bar uses the opaque surface colour instead.
+            flexibleSpace: widget.settings.backgroundImage != null
+                ? FrostedGlass(
+                    opacity: 0,
+                    child: SizedBox(
+                      height:
+                          kToolbarHeight + MediaQuery.paddingOf(context).top,
+                      width: double.infinity,
+                    ),
+                  )
+                : null,
           ),
           extendBody: true,
           bottomNavigationBar:

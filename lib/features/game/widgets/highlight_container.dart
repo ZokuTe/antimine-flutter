@@ -21,24 +21,27 @@ class HighlightContainer extends StatelessWidget {
         if (state.minefield.isEmpty) {
           return const SizedBox();
         } else {
-          // No tint: the background already carries the scrim, and stacking a
-          // second one here would make the chip darker than the surface it
-          // sits on. Only the blur is applied, so the chip reads as part of
-          // the background.
+          // Blur only while a background image is set, and never add a tint:
+          // the background already carries the scrim, so stacking a second one
+          // would make the chip darker than the surface around it.
+          final child = Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.x16,
+              vertical: Spacing.x8,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: children,
+            ),
+          );
+          if (state.settings.backgroundImage == null) {
+            return child;
+          }
           return FrostedGlass(
             opacity: 0,
             borderRadius: BorderRadius.circular(Spacing.x8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Spacing.x16,
-                vertical: Spacing.x8,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: children,
-              ),
-            ),
+            child: child,
           );
         }
       },
