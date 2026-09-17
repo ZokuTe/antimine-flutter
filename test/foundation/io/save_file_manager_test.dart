@@ -15,11 +15,44 @@ void main() {
 
   const savesN = 10;
   final UuidGenerator uuidGenerator = UuidGenerator();
-  final saveFileManager = SaveFileManager(
-    maxSaves: savesN,
-    uuidGenerator: uuidGenerator,
-    saveDirectory: Future.value(Directory('test/helpers/fixtures')),
-  );
+
+  // The checked-in fixtures under test/helpers/fixtures are read-only inputs for
+  // other test files. This test writes and deletes saves, so it must run against
+  // its own copy: otherwise it destroys the shared fixtures and makes the suite
+  // order-dependent.
+  late Directory saveDirectory;
+  late SaveFileManager saveFileManager;
+
+  const fixtureNames = [
+    'list',
+    'stats',
+    'ab7789f0-e396-4227-9a5e-68644f651c6c.save',
+    'corrupt.save',
+  ];
+
+  setUp(() async {
+    saveDirectory = await Directory.systemTemp.createTemp('antimine_saves');
+    for (final name in fixtureNames) {
+      await File('test/helpers/fixtures/$name')
+          .copy('${saveDirectory.path}/$name');
+    }
+    saveFileManager = SaveFileManager(
+      maxSaves: savesN,
+      uuidGenerator: uuidGenerator,
+      saveDirectory: Future.value(saveDirectory),
+    );
+    // Populate the manager's save-list cache from the copied fixtures so that
+    // the on-disk state is visible to loadSaveList, matching what a real
+    // application start would see.
+    await saveFileManager.clearCache();
+  });
+
+  tearDown(() async {
+    await saveFileManager.clearCache();
+    if (saveDirectory.existsSync()) {
+      await saveDirectory.delete(recursive: true);
+    }
+  });
 
   final save = SaveGame(
     id: 'test',
@@ -33,17 +66,6 @@ void main() {
     areas: const [],
     turns: 2,
   );
-
-  tearDown(() async {
-    await saveFileManager.deleteSave('test');
-    for (var i = 0; i < savesN; i++) {
-      await saveFileManager.deleteSave('save_$i');
-    }
-    await saveFileManager.insertToSaveList(
-      'cdf0cbc7-7013-4018-9894-e4e53e7acc1e',
-    );
-    await saveFileManager.clearCache();
-  });
 
   test('loadSaveList', () async {
     final save = await saveFileManager.loadSaveList();

@@ -130,7 +130,7 @@ class SaveFileManager {
     if (saveListCache.length >= max(1, maxSaves)) {
       final firstSave = saveListCache.first;
       saveListCache.remove(firstSave);
-      deleteSave(firstSave);
+      await deleteSave(firstSave);
     }
 
     saveListCache.add(saveId);
