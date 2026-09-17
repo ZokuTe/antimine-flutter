@@ -12,24 +12,27 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-def flutterMinSdkVersion = localProperties.getProperty('flutter.minSdkVersion')
-if (flutterMinSdkVersion == null) {
-    flutterMinSdkVersion = 23
+// Release signing credentials live in android/key.properties, which is not
+// checked in. When it is absent (e.g. CI building a debug APK), the release
+// build type falls back to the debug key so `flutter build apk --release`
+// still produces an installable artifact.
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+def hasReleaseSigning = keystorePropertiesFile.exists()
+if (hasReleaseSigning) {
+    keystorePropertiesFile.withReader('UTF-8') { reader ->
+        keystoreProperties.load(reader)
+    }
 }
 
 android {
     namespace "dev.lucasnlm.antimine"
     compileSdk flutter.compileSdkVersion
-    ndkVersion "26.1.10909125"
-    compileSdkVersion flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = '17'
     }
 
     sourceSets {
@@ -39,30 +42,55 @@ android {
     defaultConfig {
         applicationId 'dev.lucasnlm.antimine'
 
-        minSdkVersion flutterMinSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
-        versionCode 1800111
-        versionName '18.0.11 S'
+        minSdk flutter.minSdkVersion
+        targetSdk flutter.targetSdkVersion
+        versionCode flutter.versionCode
+        versionName flutter.versionName
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
     }
 
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
+        release {
+            // Without key.properties, sign with the debug key so local release
+            // builds remain installable. Never ship such an artifact.
+            signingConfig hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
+        }
     }
 
-    lintOptions {
+    lint {
         disable 'InvalidPackage'
-        disable "Instantiatable"
+        disable 'Instantiatable'
         checkReleaseBuilds false
         abortOnError false
+    }
+
+    // Android 16 (API 36) requires native libraries aligned to 16 KB pages.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
 flutter {
     source '../..'
-}
-
-dependencies {
-    implementation 'com.android.support:multidex:1.0.3'
 }

@@ -8,11 +8,6 @@ buildscript {
         google()
         mavenCentral()
     }
-
-    dependencies {
-        // The Android Gradle Plugin knows how to build native code with the NDK.
-        classpath 'com.android.tools.build:gradle:7.3.0'
-    }
 }
 
 rootProject.allprojects {
@@ -25,18 +20,14 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    if (project.android.hasProperty("namespace")) {
-        namespace 'dev.lucasnlm.antimine.creator'
-    }
+    namespace 'dev.lucasnlm.antimine.creator'
 
-    // Bumping the plugin compileSdkVersion requires all clients of this plugin
-    // to bump the version in their app.
-    compileSdkVersion 33
+    // Compile against the same API level as the app. Android 16 (API 36)
+    // requires a minimum compileSdk of 34 for the AndroidX dependencies.
+    compileSdk 36
 
-    // Use the NDK version
-    // declared in /android/app/build.gradle file of the Flutter project.
-    // Replace it with a version number if this plugin requires a specfic NDK version.
-    // (e.g. ndkVersion "23.1.7779620")
+    // Use the NDK version declared in /android/app/build.gradle file of the
+    // Flutter project.
     ndkVersion android.ndkVersion
 
     // Invoke the shared CMake build with the Android Gradle Plugin.
@@ -55,11 +46,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     defaultConfig {
-        minSdkVersion 21
+        minSdk 24
     }
 }

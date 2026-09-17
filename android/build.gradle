@@ -5,14 +5,47 @@ allprojects {
     }
 }
 
-rootProject.buildDir = '../build'
+rootProject.layout.buildDirectory.value(rootProject.layout.projectDirectory.dir("../build"))
 subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.layout.buildDirectory.value(rootProject.layout.buildDirectory.dir(project.name))
 }
+
+// Some pub-hosted plugins still pin an old compileSdk (e.g. in_app_review uses
+// android-33), which is below the minimum (34) required by the AndroidX
+// libraries they pull in, and below the API 36 needed for Android 16. Raise any
+// plugin that falls short. Plugins set compileSdk inside their own build script,
+// so the override is applied after each subproject's script has been evaluated.
+// AGP reads compileSdk lazily, so this is still early enough to take effect.
+//
+// This has to be registered before the evaluationDependsOn(':app') block below,
+// which otherwise forces every subproject to evaluate first.
+subprojects { subproject ->
+    subproject.afterEvaluate {
+        if (!subproject.plugins.hasPlugin('com.android.library')) {
+            return
+        }
+        def androidExt = subproject.extensions.findByName('android')
+        if (androidExt == null) {
+            return
+        }
+
+        Integer current = androidExt.hasProperty('compileSdk') ? (androidExt.compileSdk as Integer) : null
+        if (current != null && current >= 36) {
+            return
+        }
+
+        if (androidExt.hasProperty('compileSdkVersion')) {
+            androidExt.compileSdkVersion = 36
+        } else {
+            androidExt.compileSdk = 36
+        }
+    }
+}
+
 subprojects {
     project.evaluationDependsOn(':app')
 }
 
 tasks.register("clean", Delete) {
-    delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
 }
