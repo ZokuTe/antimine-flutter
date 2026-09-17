@@ -21,7 +21,12 @@ class HighlightContainer extends StatelessWidget {
         if (state.minefield.isEmpty) {
           return const SizedBox();
         } else {
+          // No tint: the background already carries the scrim, and stacking a
+          // second one here would make the chip darker than the surface it
+          // sits on. Only the blur is applied, so the chip reads as part of
+          // the background.
           return FrostedGlass(
+            opacity: 0,
             borderRadius: BorderRadius.circular(Spacing.x8),
             child: Padding(
               padding: const EdgeInsets.symmetric(

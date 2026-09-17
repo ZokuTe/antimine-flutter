@@ -88,10 +88,11 @@ class _GameScreenState extends State<GameScreen> {
               ],
             ),
             elevation: 0,
-            backgroundColor: Colors.transparent,
-            // The board scrolls behind this bar. FrostedGlass clips the
-            // backdrop filter to the bar's bounds so only this strip blurs.
+            // Blur only this strip. No tint: the app background already carries
+            // the scrim, so adding another would make the bar darker than the
+            // rest of the screen.
             flexibleSpace: FrostedGlass(
+              opacity: 0,
               child: SizedBox(
                 height: kToolbarHeight + MediaQuery.paddingOf(context).top,
                 width: double.infinity,

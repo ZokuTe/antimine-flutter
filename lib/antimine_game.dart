@@ -72,6 +72,15 @@ class AntimineGameState extends State<AntimineGame> {
               // Screens paint no background of their own so the custom
               // background below shows through.
               scaffoldBackgroundColor: Colors.transparent,
+              // App bars are transparent by default so the background image
+              // shows through everywhere, not just on the game screen.
+              // Individual screens that need a blurred bar add it themselves.
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+              ),
               extensions: [
                 FrostedTheme(
                   blur: state.panelBlur,
