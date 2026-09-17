@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flame/game.dart';
 
+import '../../foundation/i18n/translations.g.dart';
 import '../models/game_settings.dart';
 import '../models/input/action.dart';
 import 'settings_keys.dart';
@@ -198,7 +199,11 @@ class SettingsManager {
   }
 
   /// Gets the current settings.
-  Future<void> reload() async {
+  ///
+  /// [deviceLocale] is used as the locale when the user has never picked one.
+  /// It must be resolved by the caller (see [AppLocaleUtils.findDeviceLocale]),
+  /// since that requires a Flutter binding.
+  Future<void> reload({AppLocale? deviceLocale}) async {
     final initial = GameSettings.initial;
 
     final defaultActionId = await repository.getInt(
@@ -290,7 +295,9 @@ class SettingsManager {
         SettingsKeys.customMines,
         initial.customMines,
       ),
-      locale: await repository.optString(SettingsKeys.locale),
+      locale:
+          await repository.optString(SettingsKeys.locale) ??
+          _resolveLocale(deviceLocale),
       hashBase: await repository.optString(SettingsKeys.hashBase),
       hashSeed: await repository.optString(SettingsKeys.hashSeed),
       progressiveValue: await repository.getInt(
@@ -319,6 +326,25 @@ class SettingsManager {
         initial.touchSensibility,
       ),
     );
+  }
+
+  /// Returns the locale selected by the user, or falls back to [deviceLocale]
+  /// when the user has never picked one. Without this fallback the app would
+  /// always start in the base locale (English) instead of following the system
+  /// language.
+  ///
+  /// [deviceLocale] is provided by the caller because resolving it requires a
+  /// Flutter binding, which the settings layer must not depend on. When it is
+  /// null (e.g. in unit tests) the base locale is used.
+  String? _resolveLocale(AppLocale? deviceLocale) {
+    if (deviceLocale == null || deviceLocale == AppLocale.en) {
+      // No supported device locale; keep following the base locale.
+      return null;
+    }
+    final country = deviceLocale.countryCode;
+    return country == null
+        ? deviceLocale.languageCode
+        : '${deviceLocale.languageCode}_$country';
   }
 
   static Vector2? _vector2Of(double? x, double? y) {

@@ -31,7 +31,9 @@ class AntimineGameState extends State<AntimineGame> {
     return BlocBuilder<GlobalSettingsBloc, GlobalSettingsState>(
       builder: (context, state) {
         final locale = state.locale;
-        final country = locale?.split('_').lastOrNull;
+        final parts = locale?.split(RegExp('[_-]'));
+        final languageCode = parts?.firstOrNull;
+        final countryCode = parts != null && parts.length > 1 ? parts[1] : null;
         if (locale != null) {
           LocaleSettings.setLocaleRaw(locale);
         }
@@ -50,7 +52,9 @@ class AntimineGameState extends State<AntimineGame> {
           child: MaterialApp.router(
             title: t.app_name,
             debugShowCheckedModeBanner: false,
-            locale: locale != null ? Locale(locale, country) : null,
+            locale: languageCode != null
+                ? Locale(languageCode, countryCode)
+                : null,
             theme: ThemeData(
               colorScheme: state.colorScheme,
               useMaterial3: true,

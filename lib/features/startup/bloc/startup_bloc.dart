@@ -7,6 +7,7 @@ import '../../../common/global/global_settings_bloc.dart';
 import '../../../common/models/themes/game_theme_manager.dart';
 import '../../../common/settings/settings_manager.dart';
 import '../../../common/update/in_app_update_manager.dart';
+import '../../../foundation/i18n/translations.g.dart';
 import '../../../foundation/io/save_file_manager.dart';
 import '../../game/logic/dimension_manager.dart';
 import 'startup_state.dart';
@@ -32,7 +33,11 @@ class StartUpBloc extends Cubit<StartupState> {
 
   void initializeGame({required Size screenSize}) async {
     await settingsManager.init();
-    await settingsManager.reload();
+    // Resolve the device locale here, where the Flutter binding is available,
+    // so the settings layer can stay free of widget-layer dependencies.
+    await settingsManager.reload(
+      deviceLocale: AppLocaleUtils.findDeviceLocale(),
+    );
 
     gameThemeManager.init();
     globalSettingsBloc.change(
