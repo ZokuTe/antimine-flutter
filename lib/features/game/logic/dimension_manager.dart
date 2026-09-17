@@ -9,6 +9,11 @@ class DimensionManager {
   late Size screenSize;
   final bool isMobile;
 
+  /// Smallest minefield the game can create. Guards against a collapsed or
+  /// not-yet-measured window producing a non-positive dimension, which would
+  /// otherwise crash when the area list is generated.
+  static const int minMinefieldDimension = 5;
+
   void init({required Size screenSize}) {
     this.screenSize = screenSize;
   }
@@ -27,8 +32,14 @@ class DimensionManager {
 
   Size standardMinefieldSize() {
     final areaSize = calcAreaSize();
-    final width = screenSize.width ~/ areaSize - 1;
-    final height = screenSize.height ~/ areaSize - 7;
+    // screenSize can still be the pre-layout window size (0x0 or 1x1) when the
+    // minefield is first built, which would yield negative dimensions. Clamp
+    // into a usable range instead of producing an invalid minefield.
+    final width = max(screenSize.width ~/ areaSize - 1, minMinefieldDimension);
+    final height = max(
+      screenSize.height ~/ areaSize - 7,
+      minMinefieldDimension,
+    );
     return Size(width.toDouble(), height.toDouble());
   }
 

@@ -47,4 +47,31 @@ void main() {
     expect(minefieldSize.width.toInt(), 11);
     expect(minefieldSize.height.toInt(), 9);
   });
+
+  // Before the window has been measured, the first post-frame MediaQuery
+  // reports a collapsed size (0x0 on Android, 1x1 on desktop). That used to
+  // produce negative dimensions and crash while generating the area list.
+  testWidgets('standardMinefieldSize stays valid before the window is measured', (
+    tester,
+  ) async {
+    for (final collapsed in const [Size(0, 0), Size(1, 1)]) {
+      final dimensionManager = DimensionManager(isMobile: true);
+      dimensionManager.init(screenSize: collapsed);
+
+      final minefieldSize = dimensionManager.standardMinefieldSize();
+
+      expect(
+        minefieldSize.width,
+        greaterThanOrEqualTo(
+          DimensionManager.minMinefieldDimension.toDouble(),
+        ),
+      );
+      expect(
+        minefieldSize.height,
+        greaterThanOrEqualTo(
+          DimensionManager.minMinefieldDimension.toDouble(),
+        ),
+      );
+    }
+  });
 }
