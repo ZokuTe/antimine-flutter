@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../common/utils/build_context_ext.dart';
+import '../../../foundation/ui/frosted_glass.dart';
 import '../../../foundation/ui/spacing.dart';
 
 class GameDialog extends StatelessWidget {
@@ -11,7 +12,6 @@ class GameDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dialogTheme = DialogTheme.of(context);
-    final theme = Theme.of(context);
 
     final size = MediaQuery.of(context).size;
     final side = size.shortestSide;
@@ -22,20 +22,25 @@ class GameDialog extends StatelessWidget {
       alignment: Alignment.center,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
-        child: Material(
-          color:
-              dialogTheme.backgroundColor ?? theme.dialogTheme.backgroundColor,
-          elevation: 0.0,
-          shadowColor: dialogTheme.shadowColor,
-          surfaceTintColor: dialogTheme.surfaceTintColor,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(Spacing.x8)),
-          ),
-          type: MaterialType.card,
-          clipBehavior: Clip.none,
-          child: Padding(
-            padding: const EdgeInsets.all(Spacing.x16),
-            child: child,
+        // Floating above the game canvas, which a backdrop filter cannot
+        // sample, so a translucent frosted panel is used rather than a blur.
+        child: FrostedSurface(
+          opacity: 0.94,
+          borderRadius: BorderRadius.circular(Spacing.x16),
+          child: Material(
+            color: Colors.transparent,
+            elevation: 0.0,
+            shadowColor: dialogTheme.shadowColor,
+            surfaceTintColor: dialogTheme.surfaceTintColor,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(Spacing.x16)),
+            ),
+            type: MaterialType.card,
+            clipBehavior: Clip.none,
+            child: Padding(
+              padding: const EdgeInsets.all(Spacing.x16),
+              child: child,
+            ),
           ),
         ),
       ),
