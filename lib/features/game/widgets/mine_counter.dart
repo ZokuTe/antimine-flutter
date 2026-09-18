@@ -27,26 +27,28 @@ class MineCounter extends StatelessWidget {
       builder: (context, state) {
         if (state.loading && state.minefield.isEmpty) {
           return const SizedBox();
-        } else {
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              mineIcon,
-              const SizedBox(width: Spacing.x4),
-              Text(
-                state.isGameOver
-                    ? state.minefield.mines.toString()
-                    : state.remainingMines.toString(),
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: Spacing.smallText,
-                  fontWeight: FontWeight.bold,
-                  color: state.remainingMines < 0 ? colorScheme.error : null,
-                ),
-              ),
-            ],
-          );
         }
+        // Walked once: the getter scans every area, and a negative count
+        // changes both the text and the colour.
+        final remaining = state.remainingMines;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            mineIcon,
+            const SizedBox(width: Spacing.x4),
+            Text(
+              state.isGameOver
+                  ? state.minefield.mines.toString()
+                  : remaining.toString(),
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: Spacing.smallText,
+                fontWeight: FontWeight.bold,
+                color: remaining < 0 ? colorScheme.error : null,
+              ),
+            ),
+          ],
+        );
       },
     );
   }

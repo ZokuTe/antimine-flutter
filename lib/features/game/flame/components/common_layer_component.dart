@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flame/components.dart';
+import 'package:flame/sprite.dart';
 import 'package:flame_bloc/flame_bloc.dart';
 
 import '../../../../common/models/area.dart';
@@ -15,7 +16,10 @@ import '../../flame/game_renderer.dart';
 import 'component_constants.dart';
 
 class CommonLayerComponent extends ShapeComponent
-    with HasGameRef<GameRenderer>, FlameBlocListenable<GameBloc, GameState> {
+    with
+        HasGameRef<GameRenderer>,
+        FlameBlocListenable<GameBloc, GameState>,
+        Snapshot {
   Minefield? minefield;
   Iterable<Area>? areas;
 
@@ -25,6 +29,12 @@ class CommonLayerComponent extends ShapeComponent
 
   late Sprite sprite;
   late Image atlas;
+
+  /// The atlas is only available after `onLoad`, which can run after the first
+  /// `onNewState`, so the batch is built lazily once both have happened.
+  bool _atlasLoaded = false;
+
+  SpriteBatch? spriteBatch;
 
   BatchList? batchList;
   bool visible = true;
@@ -40,6 +50,20 @@ class CommonLayerComponent extends ShapeComponent
       ..filterQuality = FilterQuality.none;
   }
 
+  /// Builds the batch once the atlas has loaded and a board exists.
+  ///
+  /// `onNewState` runs before `onLoad` finishes, so the batch cannot be built
+  /// at the point the layout is computed; whichever of the two arrives last
+  /// triggers this.
+  void rebuildSpriteBatch() {
+    final batchList = this.batchList;
+    if (!_atlasLoaded || batchList == null || batchList.isEmpty) {
+      return;
+    }
+    spriteBatch = batchList.toSpriteBatch(atlas);
+    invalidateSnapshot();
+  }
+
   @override
   Future<void> onLoad() async {
     atlas = await gameRef.images.load(skin.skin);
@@ -48,11 +72,39 @@ class CommonLayerComponent extends ShapeComponent
       srcPosition: Vector2.zero(),
       srcSize: ComponentConstants.srcSize,
     );
+    _atlasLoaded = true;
+    rebuildSpriteBatch();
   }
 
   @override
   void update(double dt) {
     _refreshFilterQuality();
+  }
+
+  /// Set when the batch this layer draws has been rebuilt. The cached
+  /// snapshot is dropped on the next render, which records the new batch once
+  /// and then reuses it.
+  bool _snapshotStale = true;
+
+  /// Marks the cached snapshot as no longer matching the board.
+  ///
+  /// Every subclass rebuilds its `batchList` in `onNewState`, so the cache has
+  /// to be dropped there or the layer would keep drawing the previous frame
+  /// forever.
+  void invalidateSnapshot() {
+    _snapshotStale = true;
+  }
+
+  @override
+  void renderTree(Canvas canvas) {
+    // Must run before the mixin inspects its cached picture: `clearSnapshot`
+    // inside `render` would be too late, because the mixin decides whether to
+    // replay or record without ever calling `render` again.
+    if (_snapshotStale) {
+      clearSnapshot();
+      _snapshotStale = false;
+    }
+    super.renderTree(canvas);
   }
 
   @override
@@ -61,18 +113,17 @@ class CommonLayerComponent extends ShapeComponent
       return;
     }
 
-    super.render(canvas);
-    final batchList = this.batchList;
+    final batch = spriteBatch;
 
-    if (batchList != null) {
-      canvas.drawAtlas(
-        atlas,
-        batchList.transforms,
-        batchList.rects,
-        batchList.colors,
-        BlendMode.modulate,
-        gameRef.camera.visibleWorldRect,
-        paint,
+    if (batch != null && !batch.isEmpty) {
+      // This draw is what the `Snapshot` mixin records. Once a picture exists
+      // the mixin replays it instead of calling this again, so the per-frame
+      // atlas re-encoding happens once per board change rather than once per
+      // frame.
+      batch.render(
+        canvas,
+        cullRect: gameRef.camera.visibleWorldRect,
+        paint: paint,
       );
     }
   }
@@ -109,15 +160,27 @@ class CommonLayerComponent extends ShapeComponent
   }
 
   void _refreshFilterQuality() {
-    final zoom = gameRef.camera.viewfinder.zoom;
-    if (zoom >= 2.0) {
-      paint.filterQuality = FilterQuality.high;
-    } else if (zoom >= 1.0) {
-      paint.filterQuality = FilterQuality.medium;
-    } else if (zoom <= 0.2) {
-      paint.filterQuality = FilterQuality.none;
-    } else {
-      paint.filterQuality = FilterQuality.low;
+    final quality = _filterQualityFor(gameRef.camera.viewfinder.zoom);
+    if (paint.filterQuality == quality) {
+      return;
     }
+    paint.filterQuality = quality;
+    // The filter is part of the recorded picture, so a zoom that crosses a
+    // quality step has to drop the cache or the layer keeps drawing at the
+    // previous quality.
+    invalidateSnapshot();
+  }
+
+  static FilterQuality _filterQualityFor(double zoom) {
+    if (zoom >= 2.0) {
+      return FilterQuality.high;
+    }
+    if (zoom >= 1.0) {
+      return FilterQuality.medium;
+    }
+    if (zoom <= 0.2) {
+      return FilterQuality.none;
+    }
+    return FilterQuality.low;
   }
 }

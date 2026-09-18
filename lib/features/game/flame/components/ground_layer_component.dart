@@ -82,6 +82,7 @@ class GroundLayerComponent extends CommonLayerComponent {
     }
 
     this.batchList = batchList;
+    rebuildSpriteBatch();
   }
 
   late final mineAround1 = rectOf(5, 0);

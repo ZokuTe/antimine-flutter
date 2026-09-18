@@ -139,6 +139,7 @@ class CoverLayerComponent extends CommonLayerComponent {
     }
 
     this.batchList = batchList;
+    rebuildSpriteBatch();
   }
 
   late final baseForm = rectOf(0, 0);

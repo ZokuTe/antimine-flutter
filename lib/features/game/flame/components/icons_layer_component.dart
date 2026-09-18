@@ -56,6 +56,7 @@ class IconsLayerComponent extends CommonLayerComponent {
     }
 
     this.batchList = batchList;
+    rebuildSpriteBatch();
   }
 
   late final flagIcon = rectOf(5, 3);
