@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/global/global_settings_bloc.dart';
@@ -29,8 +27,7 @@ class LanguageBloc extends Cubit<LanguageState> {
             .map(getLanguageItem)
             .toList();
 
-    final locale = Platform.localeName;
-    final systemLocale = locale.split('_').firstOrNull ?? locale;
+    final systemLocale = AppLocaleUtils.findDeviceLocale().languageCode;
     final selected = settingsManager.cache.locale ?? systemLocale;
 
     emit(
@@ -65,6 +62,9 @@ class LanguageBloc extends Cubit<LanguageState> {
     'fi': 'Suomi',
     'fil': 'Filipino',
     'fr': 'Français',
+    // The generated enum constant is `AppLocale.iw`, but `Locale` normalises
+    // the deprecated `iw` code to `he`, which is what `supportedLocales`
+    // reports.
     'he': 'עברית',
     'hi': 'हिन्दी',
     'hu': 'Magyar',
