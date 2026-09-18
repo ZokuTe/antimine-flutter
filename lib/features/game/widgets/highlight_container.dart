@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../foundation/ui/frosted_glass.dart';
 import '../../../../foundation/ui/spacing.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_state.dart';
 
+/// The chip above the board holding the clock and the mine counter.
+///
+/// Uses a translucent fill rather than a backdrop blur: the chip rebuilds on
+/// every clock tick, and re-running a backdrop filter that often costs more
+/// than the effect is worth here.
 class HighlightContainer extends StatelessWidget {
   const HighlightContainer({super.key, required this.children});
 
@@ -20,11 +24,15 @@ class HighlightContainer extends StatelessWidget {
       builder: (context, state) {
         if (state.minefield.isEmpty) {
           return const SizedBox();
-        } else {
-          // Blur only while a background image is set, and never add a tint:
-          // the background already carries the scrim, so stacking a second one
-          // would make the chip darker than the surface around it.
-          final child = Padding(
+        }
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: _fillOpacity),
+            borderRadius: BorderRadius.circular(Spacing.x8),
+          ),
+          child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: Spacing.x16,
               vertical: Spacing.x8,
@@ -34,17 +42,11 @@ class HighlightContainer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: children,
             ),
-          );
-          if (state.settings.backgroundImage == null) {
-            return child;
-          }
-          return FrostedGlass(
-            opacity: 0,
-            borderRadius: BorderRadius.circular(Spacing.x8),
-            child: child,
-          );
-        }
+          ),
+        );
       },
     );
   }
+
+  static const double _fillOpacity = 0.12;
 }

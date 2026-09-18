@@ -10,7 +10,6 @@ import '../../../common/models/themes/game_theme.dart';
 import '../../../foundation/i18n/translations.g.dart';
 import '../../../foundation/side_effect/side_effect_bloc.dart';
 import '../../../foundation/side_effect/side_effect_event.dart';
-import '../../../foundation/ui/frosted_glass.dart';
 import '../../dialogs/game_over_dialog.dart';
 import '../../dialogs/victory_dialog.dart';
 import '../../share/share_game_modal.dart';
@@ -88,20 +87,18 @@ class _GameScreenState extends State<GameScreen> {
               ],
             ),
             elevation: 0,
-            // Blur only this strip, and only while a background image is set.
-            // Without one there is nothing behind the bar worth softening and
-            // the bar uses the opaque surface colour instead.
-            flexibleSpace:
-                widget.settings.backgroundImage != null
-                    ? FrostedGlass(
-                      opacity: 0,
-                      child: SizedBox(
-                        height:
-                            kToolbarHeight + MediaQuery.paddingOf(context).top,
-                        width: double.infinity,
-                      ),
-                    )
-                    : null,
+            // Translucent rather than blurred: this bar sits above the board,
+            // which redraws continuously while playing, so a backdrop filter
+            // here costs more than it adds.
+            flexibleSpace: ColoredBox(
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.6),
+              child: SizedBox(
+                height: kToolbarHeight + MediaQuery.paddingOf(context).top,
+                width: double.infinity,
+              ),
+            ),
           ),
           extendBody: true,
           bottomNavigationBar:
