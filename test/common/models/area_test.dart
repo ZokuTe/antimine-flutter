@@ -15,7 +15,6 @@ void main() {
     hasMine: true,
     ignoreError: true,
     minesAround: 4,
-    neighboursList: [7, 8, 9, 10],
     neighbours: Neighbours(topId: 7, rightId: 8, bottomId: 9, leftId: 10),
     form: Form(top: true, right: true, bottom: true, left: true),
   );
@@ -28,7 +27,6 @@ void main() {
     hasMine: true,
     ignoreError: true,
     minesAround: 4,
-    neighboursList: [7, 8, 9, 10],
     neighbours: Neighbours(topId: 7, rightId: 8, bottomId: 9, leftId: 10),
     form: Form(top: true, right: true, bottom: true, left: true),
   );

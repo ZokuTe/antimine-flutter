@@ -7,6 +7,7 @@ import '../../common/models/first_open.dart';
 import '../../common/models/game_status.dart';
 import '../../common/models/mark.dart';
 import '../../common/models/minefield.dart';
+import '../../common/models/neighbours.dart';
 import 'file_byte_reader.dart';
 import 'file_byte_writer.dart';
 
@@ -43,10 +44,11 @@ class SaveFileSerializer {
           covered: reader.readBool(),
           mark: Mark.fromId(reader.readInt()),
           revealed: reader.readBool(),
-          neighboursList: List<int>.generate(
-            reader.readInt(),
-            (index) => reader.readInt(),
-          ),
+          // The stored neighbor ids carry no direction, and `neighbours` is
+          // rebuilt from the board geometry when the save is loaded
+          // (`MinefieldHandler.loadFromList`). The list is still consumed so
+          // the cursor stays aligned.
+          neighbours: _consumeNeighbours(reader),
           dimNumber: reader.readBool(),
         );
       });
@@ -94,12 +96,26 @@ class SaveFileSerializer {
       writer.writeBool(area.covered);
       writer.writeInt(area.mark.mask);
       writer.writeBool(area.revealed);
-      writer.writeInt(area.neighboursList.length);
-      for (final neighbour in area.neighboursList) {
+      writer.writeInt(area.neighbours.list.length);
+      for (final neighbour in area.neighbours.list) {
         writer.writeInt(neighbour);
       }
       writer.writeBool(area.dimNumber);
     }
     return writer.bytes;
+  }
+
+  /// Reads and discards a stored neighbour id list.
+  ///
+  /// The ids are positional-only, so they cannot be mapped back onto the eight
+  /// named neighbours; the list exists in the format to keep the reader's
+  /// cursor aligned, and `MinefieldHandler.loadFromList` derives the real
+  /// neighbours from the board dimensions.
+  static Neighbours _consumeNeighbours(FileByteReader reader) {
+    final count = reader.readInt();
+    for (var i = 0; i < count; i++) {
+      reader.readInt();
+    }
+    return const Neighbours();
   }
 }

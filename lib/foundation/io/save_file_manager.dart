@@ -76,15 +76,19 @@ class SaveFileManager {
     final saveIds = <String>{};
 
     final saveDir = await saveDirectory;
-    final saveList = saveDir.listSync();
-    saveList.sort(
-      (a, b) => a.statSync().modified.compareTo(b.statSync().modified),
-    );
-    for (final file in saveList) {
-      if (file.path.endsWith('.save')) {
-        final saveId = file.path.split('/').last.replaceAll('.save', '');
-        saveIds.add(saveId);
+    // Stat once per entry and sort on the captured values; comparing inside
+    // the comparator re-stats on every comparison. `File.uri.pathSegments`
+    // splits on the platform separator, unlike `split('/')`.
+    final saves = <(FileStat, String)>[];
+    for (final entity in saveDir.listSync()) {
+      if (entity is! File || !entity.path.endsWith('.save')) {
+        continue;
       }
+      saves.add((entity.statSync(), entity.uri.pathSegments.last));
+    }
+    saves.sort((a, b) => a.$1.modified.compareTo(b.$1.modified));
+    for (final (_, name) in saves) {
+      saveIds.add(name.substring(0, name.length - '.save'.length));
     }
 
     saveListCache

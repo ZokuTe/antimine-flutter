@@ -11,11 +11,10 @@ class ShareImageManager {
 
   Future<File?> saveImage(ByteData byteData, String suffix) async {
     final shareFile = await _shareImageOf(suffix);
-    if (shareFile.existsSync()) {
-      shareFile.deleteSync();
-    }
-    shareFile.createSync();
-    shareFile.writeAsBytesSync(byteData.buffer.asUint8List(), flush: true);
+    // `writeAsBytes` creates the file and truncates it when it already exists,
+    // so the explicit exists/delete/create round trip only added syscalls and a
+    // window where the target was missing.
+    await shareFile.writeAsBytes(byteData.buffer.asUint8List(), flush: true);
     return shareFile;
   }
 
