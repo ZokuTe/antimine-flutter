@@ -6,9 +6,12 @@ import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame_bloc/flame_bloc.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../../common/models/game_settings.dart';
+import '../../../common/models/input/game_input.dart';
+import '../../../common/models/input/input_type.dart';
 import '../../../common/models/skins/skin.dart';
 import '../../../common/models/themes/game_theme.dart';
 import '../../../foundation/side_effect/side_effect_bloc.dart';
@@ -33,7 +36,14 @@ class GameRenderer extends FlameGame
     required this.theme,
     required this.areaSize,
     required this.settings,
-  });
+  }) {
+    // Touching `gestureDetectors` builds the map (including the double-tap
+    // recognizer this class declares), so the entry can be dropped here when
+    // the control scheme has no use for the gesture.
+    if (!_usesDoubleTap) {
+      gestureDetectors.remove<DoubleTapGestureRecognizer>();
+    }
+  }
 
   final GameBloc gameBloc;
   final SideEffectBloc sideEffectBloc;
@@ -49,6 +59,18 @@ class GameRenderer extends FlameGame
   late IconsLayerComponent iconsComponent;
   late ShareComponent shareComponent;
   late FlameMultiBlocProvider blocComponent;
+
+  /// Whether the active control scheme binds `doubleTap` to anything.
+  ///
+  /// `DoubleTapGestureRecognizer` keeps the gesture arena open for
+  /// [kDoubleTapTimeout] so it can tell a double tap from two single ones, and
+  /// that makes every single tap take ~300 ms to arrive. Most schemes map
+  /// double tap to the same action as an existing gesture, so the wait buys
+  /// nothing; registering the recognizer only when the map actually uses
+  /// double tap removes the delay without losing the gesture where it matters.
+  bool get _usesDoubleTap => GameInput.fromId(
+    settings.controlType,
+  ).inputMap.containsKey(InputType.doubleTap);
 
   late bool isPortrait;
   late GameParams params;
