@@ -50,32 +50,47 @@ do not fall back to `--no-gpg-sign` unless asked.
 
 ## Versioning
 
-Date-based: `year.month.day` of the release. A second build on the same day
-appends a hotfix revision, e.g. `26.9.17+hotfix.1`.
+Date-based: `year.month.day`, followed by a revision letter. The first build
+on a given day is always `a`; each further build that day takes the next
+letter in order.
+
+```
+26.9.18-a   first build on 2026-09-18
+26.9.18-b   second build the same day
+26.9.18-c   third
+```
+
+The letter is separated by a hyphen because Pub parses this field as semver
+and rejects a letter appended directly to the version core
+(`26.9.18b` fails with "Invalid version number"). Flutter passes everything
+before the `+` through as `versionName`, so the APK reports `26.9.18-b`, and
+the tag and GitHub release carry it too (`v26.9.18-b`).
 
 The `pubspec.yaml` version is `name+build`:
 
 ```yaml
-version: 26.9.17+6      # versionName=26.9.17, versionCode=6
+version: 26.9.18-a+7      # versionName=26.9.18-a, versionCode=7
 ```
 
 **`versionCode` must strictly increase** or Android refuses to install the new
-APK over an existing one. Bump the number after `+` on every release.
+APK over an existing one. Bump the number after `+` on every release,
+independently of the letter.
 
 ## Release process
 
 ### 1. Bump the version
 
-Edit `pubspec.yaml`. Both the date and the build number change:
+Edit `pubspec.yaml`. The revision letter and the build number both change;
+the date changes only on the day's first release:
 
 ```yaml
-version: 26.9.17+6   ->   version: 26.9.18+7
+version: 26.9.18-a+7   ->   version: 26.9.18-b+8
 ```
 
 Check nothing else hardcodes the version:
 
 ```sh
-grep -rn "26\.9\.17" --include=*.yaml --include=*.dart --include=*.gradle \
+grep -rn "26\.9\.18" --include=*.yaml --include=*.dart --include=*.gradle \
   --include=*.json . | grep -v '^./build/'
 ```
 
@@ -147,20 +162,20 @@ malformed.
 
 ```sh
 git add pubspec.yaml
-git commit -m "chore: release 26.9.18"
+git commit -m "chore: release 26.9.18-b"
 
 git push origin main
-git tag -a v26.9.18 -m "Antimine 26.9.18"
-git push origin v26.9.18
+git tag -a v26.9.18-b -m "Antimine 26.9.18-b"
+git push origin v26.9.18-b
 ```
 
 ### 6. Create the release
 
 ```sh
-gh release create v26.9.18 \
+gh release create v26.9.18-b \
   build/app/outputs/flutter-apk/app-release.apk \
   --repo ZokuTe/antimine-flutter \
-  --title "Antimine 26.9.18 — Android 16 build" \
+  --title "Antimine 26.9.18-b — Android 16 build" \
   --notes-file /tmp/release-notes.md \
   --latest
 ```
@@ -176,7 +191,7 @@ command** — two concurrent downloads writing the same file will interleave and
 produce a bogus mismatch.
 
 ```sh
-gh release download v26.9.18 --repo ZokuTe/antimine-flutter \
+gh release download v26.9.18-b --repo ZokuTe/antimine-flutter \
   --pattern "app-release.apk" --output /tmp/verify.apk --clobber
 sha256sum /tmp/verify.apk
 ```
