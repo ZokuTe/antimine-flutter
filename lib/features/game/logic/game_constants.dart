@@ -7,7 +7,12 @@ class GameConstants {
   static const minSafeArea = 9;
   static const maxMinefieldWidth = 100;
   static const maxMinefieldHeight = 100;
-  static const tickDuration = Duration(milliseconds: 200);
+
+  /// The clock advances in whole seconds because that is all the display
+  /// shows, and every tick costs a state rebuild that fans out to each
+  /// `FlameBlocListenable` on the board. Ticking faster than the display
+  /// cannot change what is shown.
+  static const tickDuration = Duration(seconds: 1);
   static const hintCooldown =
       kDebugMode
           ? Duration(seconds: 0, milliseconds: 500)

@@ -114,7 +114,7 @@ class MinefieldHandler {
       );
 
       if (!target.hasMine && target.minesAround == 0 && openNeighbors) {
-        for (final neighbour in target.neighboursList) {
+        for (final neighbour in target.neighbours.list) {
           openById(neighbour);
         }
       }
@@ -194,24 +194,28 @@ class MinefieldHandler {
   }
 
   void undarkNumbers() {
+    // Only cells that are currently dimmed need rewriting; `copyWith`
+    // allocates, and on the largest board this loop otherwise rebuilds every
+    // area for a tap that dimmed a handful.
     for (final area in _areas) {
-      _areas[area.id] = area.copyWith(dimNumber: false);
+      if (area.dimNumber) {
+        _areas[area.id] = area.copyWith(dimNumber: false);
+      }
     }
   }
 
   void darkFlaggedNeighbors() {
     for (final area in _areas) {
-      _areas[area.id] = area.copyWith(dimNumber: false);
+      var dimNumber = false;
 
       if (area.minesAround > 0) {
-        final neighboursList = area.neighboursList;
-        final neighbours = neighboursList.map((e) => _areas[e]);
+        final neighbours = area.neighbours.list.map((e) => _areas[e]);
         final flaggedAreas = neighbours.where((e) => e.isSolved).length;
-        final minesAround = area.minesAround;
+        dimNumber = flaggedAreas == area.minesAround;
+      }
 
-        if (flaggedAreas == minesAround) {
-          _areas[area.id] = area.copyWith(dimNumber: true);
-        }
+      if (area.dimNumber != dimNumber) {
+        _areas[area.id] = area.copyWith(dimNumber: dimNumber);
       }
     }
   }
@@ -252,8 +256,7 @@ class MinefieldHandler {
     var result = false;
 
     if (!target.covered && target.minesAround > 0) {
-      final neighboursList = target.neighboursList;
-      final neighbours = neighboursList.map((e) => _areas[e]);
+      final neighbours = target.neighbours.list.map((e) => _areas[e]);
       final solvedAreas = neighbours.where((e) => e.isSolved).length;
       final coveredAreas =
           neighbours
@@ -336,7 +339,7 @@ class MinefieldHandler {
   void runAutoFlagging() {
     for (final area in _areas) {
       if (area.hasMine) {
-        final isIsland = area.neighboursList
+        final isIsland = area.neighbours.list
             .map((id) => _areas[id])
             .every((element) => !element.covered);
         if (isIsland) {
@@ -382,7 +385,7 @@ class MinefieldHandler {
     }
 
     final priorityMines = mines.where(
-      (e) => e.neighboursList.any(
+      (e) => e.neighbours.list.any(
         (id) => !_areas[id].covered && _areas[id].mark.isNone,
       ),
     );

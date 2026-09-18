@@ -61,14 +61,14 @@ class MinefieldSolver {
   }
 
   int _coveredAround(Area area) {
-    return area.neighboursList
+    return area.neighbours.list
         .map((e) => _areas[e])
         .where((e) => e.covered)
         .length;
   }
 
   int _flaggedAround(Area area) {
-    return area.neighboursList
+    return area.neighbours.list
         .map((e) => _areas[e])
         .where((e) => e.covered && e.mark.isFlag)
         .length;
@@ -83,7 +83,7 @@ class MinefieldSolver {
   }
 
   void _openSafeNeighbors(Area area) {
-    for (var e in area.neighboursList) {
+    for (var e in area.neighbours.list) {
       final neighbour = _areas[e];
       if (neighbour.covered && !neighbour.mark.isFlag) {
         _areas[e] = _areas[e].copyWith(covered: false);
@@ -92,7 +92,7 @@ class MinefieldSolver {
   }
 
   void _flagAllAround(Area area) {
-    for (var e in area.neighboursList) {
+    for (var e in area.neighbours.list) {
       final neighbour = _areas[e];
       if (neighbour.covered) {
         _areas[e] = _areas[e].copyWith(mark: Mark.flag);

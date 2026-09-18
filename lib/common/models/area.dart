@@ -18,7 +18,6 @@ class Area extends Equatable {
   final bool dimNumber;
 
   final Neighbours neighbours;
-  final List<int> neighboursList;
   final Form? form;
 
   bool get isIgnoredMine => hasMine && ignoreError && !covered;
@@ -36,7 +35,6 @@ class Area extends Equatable {
     this.dimNumber = false,
     this.ignoreError = false,
     this.minesAround = 0,
-    this.neighboursList = const <int>[],
     this.neighbours = const Neighbours(),
     this.form,
   });
@@ -52,7 +50,6 @@ class Area extends Equatable {
     int? minesAround,
     bool? revealed,
     bool? dimNumber,
-    List<int>? neighboursList,
     Neighbours? neighbours,
     Form? form,
   }) {
@@ -67,7 +64,6 @@ class Area extends Equatable {
       dimNumber: dimNumber ?? this.dimNumber,
       ignoreError: ignoreError ?? this.ignoreError,
       minesAround: minesAround ?? this.minesAround,
-      neighboursList: neighboursList ?? this.neighboursList,
       neighbours: neighbours ?? this.neighbours,
       form: form ?? this.form,
     );
@@ -88,7 +84,6 @@ class Area extends Equatable {
     ignoreError,
     minesAround,
     neighbours,
-    neighboursList,
     form,
   ];
 }

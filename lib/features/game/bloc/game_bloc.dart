@@ -220,10 +220,6 @@ class GameBloc extends Cubit<GameState> {
     emit(state.copyWith(selectedAction: action));
   }
 
-  void changeCameraPosition(Vector2 position) {
-    emit(state.copyWith(cameraPosition: position));
-  }
-
   void clockTick() {
     if (!state.isPreview && state.status == GameStatus.inProgress) {
       var duration = state.duration;

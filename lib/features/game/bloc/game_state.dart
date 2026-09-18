@@ -21,7 +21,6 @@ class GameState extends Equatable {
     this.minefield = Minefield.empty,
     this.areas = const [],
     this.screenSize,
-    this.cameraPosition,
     this.selectedAction = Action.flag,
     this.firstOpen,
     this.difficulty,
@@ -44,7 +43,6 @@ class GameState extends Equatable {
   final Action selectedAction;
   final GameSettings settings;
   final Vector2? screenSize;
-  final Vector2? cameraPosition;
   final int startDate;
   final int duration;
   final bool loading;
@@ -73,7 +71,6 @@ class GameState extends Equatable {
     Minefield? minefield,
     List<Area>? areas,
     Vector2? screenSize,
-    Vector2? cameraPosition,
     Action? selectedAction,
     GameSettings? settings,
     FirstOpen? firstOpen,
@@ -93,7 +90,6 @@ class GameState extends Equatable {
       minefield: minefield ?? this.minefield,
       areas: areas ?? this.areas,
       screenSize: screenSize ?? this.screenSize,
-      cameraPosition: cameraPosition ?? this.cameraPosition,
       selectedAction: selectedAction ?? this.selectedAction,
       settings: settings ?? this.settings,
       firstOpen: firstOpen ?? this.firstOpen,
@@ -123,7 +119,6 @@ class GameState extends Equatable {
     // place, so identity is both sufficient and cheap.
     _ListIdentity(areas),
     screenSize,
-    cameraPosition,
     selectedAction,
     settings,
     firstOpen,

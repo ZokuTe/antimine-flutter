@@ -1,5 +1,12 @@
 import 'package:equatable/equatable.dart';
 
+/// The ids of the up-to-eight areas surrounding one cell.
+///
+/// The ids are stored as fields so `props` lists them individually (and so the
+/// class stays `const`-constructible). [list] is the derived view callers
+/// iterate; it is computed on demand because most cells never need it, and the
+/// alternative — storing the list alongside these fields — duplicates the same
+/// eight integers on every cell of the board.
 class Neighbours extends Equatable {
   final int topId;
   final int bottomId;
@@ -21,17 +28,24 @@ class Neighbours extends Equatable {
     this.bottomRightId = noLink,
   });
 
-  List<int> get list =>
-      [
-        topId,
-        bottomId,
-        leftId,
-        rightId,
-        topLeftId,
-        topRightId,
-        bottomLeftId,
-        bottomRightId,
-      ].where((e) => e >= 0).toList();
+  List<int> get list {
+    final neighbours = <int>[];
+    for (final id in [
+      topId,
+      bottomId,
+      leftId,
+      rightId,
+      topLeftId,
+      topRightId,
+      bottomLeftId,
+      bottomRightId,
+    ]) {
+      if (id >= 0) {
+        neighbours.add(id);
+      }
+    }
+    return neighbours;
+  }
 
   @override
   List<Object?> get props => [

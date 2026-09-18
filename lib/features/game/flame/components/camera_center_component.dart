@@ -33,7 +33,6 @@ class CameraCenterComponent extends Component
     if (state.turn == 0 ||
         _screenSize != state.screenSize ||
         state.id != _lastId) {
-      position = state.cameraPosition ?? Vector2.zero();
       _screenSize = state.screenSize;
       _lastId = state.id;
       _setupCamera();
@@ -43,7 +42,6 @@ class CameraCenterComponent extends Component
   void _setupCamera() {
     gameRef.camera.follow(this, snap: true);
     gameRef.camera.viewfinder.zoom = 1.0;
-    bloc.changeCameraPosition(position);
   }
 
   void changeCameraPosition(Minefield minefield, double newX, double newY) {
@@ -82,8 +80,6 @@ class CameraCenterComponent extends Component
     }
 
     position = Vector2(newX, newY);
-
-    bloc.changeCameraPosition(position);
   }
 
   Vector2 _minefieldSizeOf(Minefield minefield) {

@@ -28,7 +28,6 @@ abstract class MinefieldCreator {
           hasMine: false,
           minesAround: 0,
           neighbours: neighbours,
-          neighboursList: neighbours.list,
           form:
               useForms
                   ? Form.getFormByPosition(
@@ -54,7 +53,6 @@ abstract class MinefieldCreator {
       );
       areas[area.id] = area.copyWith(
         neighbours: neighbours,
-        neighboursList: neighbours.list,
         form:
             useForms
                 ? Form.getFormByPosition(
@@ -73,7 +71,7 @@ abstract class MinefieldCreator {
   void countMinesAround(List<Area> map, Minefield minefield) {
     final mines = map.where((e) => e.hasMine);
     for (final mine in mines) {
-      for (final neighbour in mine.neighboursList) {
+      for (final neighbour in mine.neighbours.list) {
         final area = map[neighbour];
         if (!area.hasMine) {
           map[area.id] = area.copyWith(minesAround: area.minesAround + 1);
