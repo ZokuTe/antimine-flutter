@@ -67,17 +67,18 @@ class GameRenderer extends FlameGame
   ///
   /// `DoubleTapGestureRecognizer` keeps the gesture arena open for
   /// [kDoubleTapTimeout] so it can tell a double tap from two single ones, and
-  /// that makes every single tap take ~300 ms to arrive. Most schemes map
-  /// double tap to the same action as an existing gesture, so the wait buys
-  /// nothing; registering the recognizer only when the map actually uses
-  /// double tap removes the delay without losing the gesture where it matters.
+  /// that makes every single tap take ~300 ms to arrive. The recognizer is
+  /// therefore only kept when the scheme actually needs it.
+  ///
+  /// "Needs it" is not the same as "binds `doubleTap`": in two of the schemes
+  /// `doubleTap` resolves to the same action as `singleTap`, so the gesture is
+  /// reachable by tapping once and the wait buys nothing. The check compares
+  /// the bound actions instead of looking for the key.
   ///
   /// The scheme can be changed while a game is running, so this is re-checked
   /// on every state update rather than only at construction.
   void _syncDoubleTapRegistration() {
-    final needed = GameInput.fromId(
-      settings.controlType,
-    ).inputMap.containsKey(InputType.doubleTap);
+    final needed = _schemeNeedsDoubleTap();
 
     if (needed == _doubleTapRegistered) {
       return;
@@ -98,6 +99,18 @@ class GameRenderer extends FlameGame
       gestureDetectors.remove<DoubleTapGestureRecognizer>();
     }
     _doubleTapRegistered = needed;
+  }
+
+  /// True when double-tapping reaches an action no other bound gesture does.
+  bool _schemeNeedsDoubleTap() {
+    final map = GameInput.fromId(settings.controlType).inputMap;
+    final doubleTap = map[InputType.doubleTap];
+
+    if (doubleTap == null) {
+      return false;
+    }
+    return doubleTap != map[InputType.singleTap] &&
+        doubleTap != map[InputType.longTap];
   }
 
   late bool isPortrait;
