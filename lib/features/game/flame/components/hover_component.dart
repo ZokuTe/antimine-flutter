@@ -63,21 +63,29 @@ class HoverComponent extends ShapeComponent
 
   @override
   void update(double dt) {
+    // Track the previous values so the colour filter is only rebuilt when the
+    // animation actually moves. It settles at a constant value while the hover
+    // highlight is idle, and `darken` converts through HSL, which is not worth
+    // running every frame for an unchanged result.
+    final previousOpacity = _opacity;
+    final previousExpansion = _expansion;
+
     if (!enabled) {
       _opacity = max(_opacity - _expansionSpeed * dt, 0.0);
       _expansion = max(_expansion - _expansionSpeed * dt, 0.0);
-      final color = theme.cover
-          .darken(0.1)
-          .withAlpha((_opacity * _maxAlpha).toInt());
-      paint.colorFilter = ColorFilter.mode(color, BlendMode.srcIn);
     } else {
       _opacity = min(_opacity + _expansionSpeed * dt, _maxOpacity);
       _expansion = min(_expansion + _expansionSpeed * dt, _maxExpansion);
-      final color = theme.cover
-          .darken(0.1)
-          .withAlpha((_opacity * _maxAlpha).toInt());
-      paint.colorFilter = ColorFilter.mode(color, BlendMode.srcIn);
     }
+
+    if (_opacity == previousOpacity && _expansion == previousExpansion) {
+      return;
+    }
+
+    final color = theme.cover
+        .darken(0.1)
+        .withAlpha((_opacity * _maxAlpha).toInt());
+    paint.colorFilter = ColorFilter.mode(color, BlendMode.srcIn);
   }
 
   @override
