@@ -57,9 +57,11 @@ class CommonLayerComponent extends ShapeComponent
   /// triggers this.
   void rebuildSpriteBatch() {
     final batchList = this.batchList;
-    if (!_atlasLoaded || batchList == null || batchList.isEmpty) {
+    if (!_atlasLoaded || batchList == null) {
       return;
     }
+    // Always replace the batch, including with an empty one: keeping the
+    // previous game's batch here is what let its sprites outlive it.
     spriteBatch = batchList.toSpriteBatch(atlas);
     invalidateSnapshot();
   }
@@ -97,6 +99,17 @@ class CommonLayerComponent extends ShapeComponent
 
   @override
   void renderTree(Canvas canvas) {
+    // `Snapshot` records whatever `render` draws, and `render` bails out while
+    // the layer is hidden. Recording in that state would cache an empty
+    // picture and mark it valid, so the layer would draw nothing even after
+    // being shown again — which is how flags from the previous game survived
+    // into the next one. Snapshots are therefore only taken when visible.
+    if (!visible) {
+      clearSnapshot();
+      _snapshotStale = true;
+      return;
+    }
+
     // Must run before the mixin inspects its cached picture: `clearSnapshot`
     // inside `render` would be too late, because the mixin decides whether to
     // replay or record without ever calling `render` again.
