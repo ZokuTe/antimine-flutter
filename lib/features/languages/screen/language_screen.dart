@@ -23,7 +23,7 @@ class LanguageScreen extends StatelessWidget {
                 final current = state.languages[index];
                 return Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? Spacing.x128 : Spacing.x8,
+                    horizontal: context.isTablet ? Spacing.x128 : Spacing.x8,
                   ),
                   child: ListTile(
                     leading: Radio<String>(

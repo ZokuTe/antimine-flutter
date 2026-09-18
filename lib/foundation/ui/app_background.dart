@@ -67,8 +67,9 @@ class AppBackground extends StatelessWidget {
 
   /// Target decode width in physical pixels.
   static int _decodeWidth(BuildContext context) {
-    final media = MediaQuery.of(context);
-    final width = media.size.width * media.devicePixelRatio;
+    final width =
+        MediaQuery.sizeOf(context).width *
+        MediaQuery.devicePixelRatioOf(context);
     // Cap it: past a point the extra pixels are invisible given the scrim.
     return width.clamp(360, 1440).round();
   }

@@ -13,9 +13,9 @@ class GameDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final dialogTheme = DialogTheme.of(context);
 
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     final side = size.shortestSide;
-    final widthConstraint = isTablet ? 0.5 : 0.8;
+    final widthConstraint = context.isTablet ? 0.5 : 0.8;
     final double maxWidth = side * widthConstraint;
 
     return Align(

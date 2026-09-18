@@ -10,8 +10,8 @@ class TutorialImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.shortestSide - Spacing.x32;
-    final constraint = isTablet ? width * 0.25 : width * 0.45;
+    final width = MediaQuery.sizeOf(context).shortestSide - Spacing.x32;
+    final constraint = context.isTablet ? width * 0.25 : width * 0.45;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x24),
       child: SizedBox(

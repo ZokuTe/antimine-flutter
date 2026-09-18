@@ -22,7 +22,7 @@ class PreviewBottomBar extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.symmetric(
                 vertical: Spacing.x4,
-                horizontal: isTablet ? Spacing.x128 : Spacing.x8,
+                horizontal: context.isTablet ? Spacing.x128 : Spacing.x8,
               ),
               child: GameButton(
                 isPrimary: true,

@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-bool get isTablet {
-  final firstView = WidgetsBinding.instance.platformDispatcher.views.first;
-  final logicalShortestSide =
-      firstView.physicalSize.shortestSide / firstView.devicePixelRatio;
-  return logicalShortestSide > 600;
+extension BuildContextExt on BuildContext {
+  /// True when the shortest side of this context's viewport is wider than 600
+  /// logical pixels, the conventional tablet breakpoint.
+  bool get isTablet => MediaQuery.sizeOf(this).shortestSide > 600;
 }

@@ -50,7 +50,7 @@ class TutorialScreen extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.symmetric(
               vertical: Spacing.x16,
-              horizontal: isTablet ? Spacing.x128 : 0.0,
+              horizontal: context.isTablet ? Spacing.x128 : 0.0,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -87,7 +87,7 @@ class TutorialScreen extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(
             vertical: Spacing.x8,
-            horizontal: isTablet ? Spacing.x128 : Spacing.x8,
+            horizontal: context.isTablet ? Spacing.x128 : Spacing.x8,
           ),
           child: GameButton(
             isPrimary: true,

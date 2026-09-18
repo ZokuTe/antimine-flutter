@@ -15,7 +15,7 @@ class SkinsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final itemsPerLine = isTablet ? 8 : 4;
+    final itemsPerLine = context.isTablet ? 8 : 4;
     return TitledPanel(
       title: t.shapes,
       children: [
@@ -29,7 +29,12 @@ class SkinsPanel extends StatelessWidget {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children:
+                        // `skip`/`take` must precede `map`: they are lazy, so
+                        // mapping first would build a SkinBox for every skin on
+                        // every row and discard all but the visible slice.
                         Skins.all
+                            .skip(i * itemsPerLine)
+                            .take(itemsPerLine)
                             .map(
                               (e) => SkinBox(
                                 skin: e,
@@ -39,8 +44,6 @@ class SkinsPanel extends StatelessWidget {
                                 onColor: gameTheme.iconColor,
                               ),
                             )
-                            .skip(i * itemsPerLine)
-                            .take(itemsPerLine)
                             .toList(),
                   ),
               ],

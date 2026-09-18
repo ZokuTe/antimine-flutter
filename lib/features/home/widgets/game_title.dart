@@ -12,7 +12,8 @@ class GameTitle extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: Spacing.x16,
-        horizontal: isTablet ? (Spacing.x128 + Spacing.x24) : Spacing.x24,
+        horizontal:
+            context.isTablet ? (Spacing.x128 + Spacing.x24) : Spacing.x24,
       ),
       child: Align(
         alignment: Alignment.centerLeft,

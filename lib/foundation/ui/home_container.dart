@@ -11,7 +11,7 @@ class HomeContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final horizontalPadding = isTablet ? Spacing.x128 : Spacing.x16;
+    final horizontalPadding = context.isTablet ? Spacing.x128 : Spacing.x16;
     return Padding(
       padding: EdgeInsets.only(
         bottom: Spacing.x8,

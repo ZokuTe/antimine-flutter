@@ -25,7 +25,7 @@ class ThemesScreen extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(
             vertical: Spacing.x16,
-            horizontal: isTablet ? Spacing.x128 : 0.0,
+            horizontal: context.isTablet ? Spacing.x128 : 0.0,
           ),
           child: const Column(
             mainAxisAlignment: MainAxisAlignment.center,

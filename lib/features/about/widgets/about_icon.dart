@@ -7,8 +7,8 @@ class AboutIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.shortestSide;
-    final scale = isTablet ? 0.1 : 0.2;
+    final width = MediaQuery.sizeOf(context).shortestSide;
+    final scale = context.isTablet ? 0.1 : 0.2;
     final iconSize = width * scale;
     return SizedBox(
       width: iconSize,

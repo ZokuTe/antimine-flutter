@@ -62,7 +62,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           final item = state.historyItems[index];
                           return Padding(
                             padding: EdgeInsets.symmetric(
-                              horizontal: isTablet ? Spacing.x128 : Spacing.x16,
+                              horizontal:
+                                  context.isTablet ? Spacing.x128 : Spacing.x16,
                               vertical: Spacing.x4,
                             ),
                             child: ListTile(

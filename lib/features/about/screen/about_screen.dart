@@ -9,8 +9,20 @@ import '../../../foundation/ui/game_button_align.dart';
 import '../../../foundation/ui/spacing.dart';
 import '../widgets/about_icon.dart';
 
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
+
+  @override
+  State<AboutScreen> createState() {
+    return _AboutScreenState();
+  }
+}
+
+class _AboutScreenState extends State<AboutScreen> {
+  /// Resolved once. `FutureBuilder` requires a future that already exists —
+  /// creating one in `build` re-issues a platform-channel call on every
+  /// rebuild and drops the previous value while the new one is pending.
+  late final Future<PackageInfo> _packageInfo = PackageInfo.fromPlatform();
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +49,7 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: Spacing.x16),
           FutureBuilder(
-            future: PackageInfo.fromPlatform(),
+            future: _packageInfo,
             builder: (context, snapshot) {
               final data = snapshot.data;
               if (data != null) {
@@ -58,7 +70,7 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: Spacing.x48),
           Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? Spacing.x128 : Spacing.x32,
+              horizontal: context.isTablet ? Spacing.x128 : Spacing.x32,
             ),
             child: Column(
               children: [

@@ -26,7 +26,7 @@ class SettingsList extends StatelessWidget {
       child: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: isTablet ? Spacing.x128 : 0.0,
+            horizontal: context.isTablet ? Spacing.x128 : 0.0,
             vertical: Spacing.x16,
           ),
           child: Column(

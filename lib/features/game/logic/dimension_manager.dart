@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'dart:io';
-import 'package:antimine/common/utils/build_context_ext.dart';
 import 'package:flutter/material.dart';
 
 class DimensionManager {
@@ -21,6 +20,11 @@ class DimensionManager {
   double appBarHeight(BuildContext context) {
     return Scaffold.of(context).appBarMaxHeight ?? 0;
   }
+
+  /// The conventional tablet breakpoint, applied to the window this manager
+  /// was initialised with. Deriving it from [screenSize] rather than reading a
+  /// process-wide view keeps the decision tied to the window being laid out.
+  bool get isTablet => screenSize.shortestSide > 600;
 
   double calcAreaSize() {
     final areaColumns = isTablet ? 20 : 12;
