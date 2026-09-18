@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../../foundation/ui/spacing.dart';
@@ -7,14 +9,16 @@ class GameEmoji extends StatefulWidget {
 
   final List<String> emojis;
 
+  static final Random _random = Random();
+
+  /// Picks an emoji other than [filter] when the list offers one.
   String randomEmoji({String? filter}) {
-    final list = List.castFrom(emojis);
-    list.shuffle();
-    if (filter != null) {
-      return list.where((emoji) => filter != emoji).first;
-    } else {
-      return list.first;
-    }
+    final candidates =
+        filter == null
+            ? emojis
+            : emojis.where((emoji) => emoji != filter).toList();
+    final pool = candidates.isEmpty ? emojis : candidates;
+    return pool[_random.nextInt(pool.length)];
   }
 
   @override
@@ -29,7 +33,6 @@ class _GameEmojiState extends State<GameEmoji> {
   @override
   void initState() {
     super.initState();
-    widget.emojis.shuffle();
     _emoji = widget.randomEmoji();
   }
 

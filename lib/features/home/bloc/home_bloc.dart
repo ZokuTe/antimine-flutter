@@ -64,6 +64,6 @@ class HomeBloc extends Cubit<HomeState> {
       (e) =>
           MapEntry<Difficulty, String>(e, minefieldManager.formatToString(e)),
     );
-    return {for (var e in entries) e.key: e.value};
+    return Map.fromEntries(entries);
   }
 }

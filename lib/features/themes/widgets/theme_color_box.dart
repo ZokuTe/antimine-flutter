@@ -49,7 +49,7 @@ class ThemeColorBox extends StatelessWidget {
             child:
                 isSelected
                     ? Center(child: Icon(Icons.check, color: onColor))
-                    : Container(),
+                    : const SizedBox(),
           ),
         ),
       ),

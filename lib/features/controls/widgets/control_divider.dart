@@ -8,12 +8,12 @@ class ControlDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.x16),
-      child: Container(
-        height: Spacing.x2,
-        color: colorScheme.onSurface.withAlpha(_controlDividerAlpha),
-      ),
+    return Divider(
+      height: Spacing.x2,
+      thickness: Spacing.x2,
+      indent: Spacing.x16,
+      endIndent: Spacing.x16,
+      color: colorScheme.onSurface.withAlpha(_controlDividerAlpha),
     );
   }
 

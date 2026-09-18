@@ -30,7 +30,12 @@ class MainColorPanel extends StatelessWidget {
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children:
+                          // `skip`/`take` must precede `map`: they are lazy, so
+                          // mapping first would build a ThemeColorBox for all
+                          // 24 colours on every row and discard all but four.
                           GameThemes.primaryColors
+                              .skip(i * 4)
+                              .take(4)
                               .map(
                                 (e) => ThemeColorBox(
                                   color: e.primary,
@@ -40,8 +45,6 @@ class MainColorPanel extends StatelessWidget {
                                   onTap: () => bloc.change(primary: e),
                                 ),
                               )
-                              .skip(i * 4)
-                              .take(4)
                               .toList(),
                     ),
                   ),

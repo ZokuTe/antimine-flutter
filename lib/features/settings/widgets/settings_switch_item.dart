@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../foundation/ui/spacing.dart';
 
-class SettingsSwitchItem extends StatefulWidget {
+/// A titled switch whose position is owned by the caller.
+///
+/// `SwitchListTile` is stateless by design and renders whatever value it is
+/// given, so mirroring the value into local state only invited the copy to
+/// drift from the bloc.
+class SettingsSwitchItem extends StatelessWidget {
   const SettingsSwitchItem({
     super.key,
     required this.title,
@@ -15,45 +20,17 @@ class SettingsSwitchItem extends StatefulWidget {
   final ValueChanged<bool> onChanged;
 
   @override
-  State<StatefulWidget> createState() {
-    return _SettingsSwitchItemState();
-  }
-}
-
-class _SettingsSwitchItemState extends State<SettingsSwitchItem> {
-  late bool _value;
-
-  @override
-  void initState() {
-    super.initState();
-    _value = widget.value;
-  }
-
-  @override
-  void didUpdateWidget(SettingsSwitchItem oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    setState(() {
-      _value = widget.value;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return SwitchListTile(
-      title: Text(widget.title),
+      title: Text(title),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(Spacing.x8)),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.x16),
       dense: true,
       enableFeedback: false,
-      value: _value,
-      onChanged: (value) {
-        setState(() {
-          _value = value;
-        });
-        widget.onChanged(value);
-      },
+      value: value,
+      onChanged: onChanged,
     );
   }
 }

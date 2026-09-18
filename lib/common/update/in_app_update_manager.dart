@@ -10,13 +10,11 @@ class InAppUpdateManager {
       return;
     }
 
-    await InAppUpdate.checkForUpdate()
-        .then((info) {
-          _updateInfo = info;
-        })
-        .catchError((e) {
-          _updateInfo = null;
-        });
+    try {
+      _updateInfo = await InAppUpdate.checkForUpdate();
+    } catch (e) {
+      _updateInfo = null;
+    }
   }
 
   void checkForUpdate() async {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../foundation/i18n/translations.g.dart';
 import '../bloc/settings_bloc.dart';
@@ -21,7 +20,6 @@ class SettingsScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(t.settings),
-            leading: BackButton(onPressed: () => context.pop()),
             actions: [
               if (state.hasChanged)
                 IconButton(

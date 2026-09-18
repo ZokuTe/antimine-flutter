@@ -29,8 +29,29 @@ class _ControlSliderState extends State<ControlSlider> {
   @override
   void initState() {
     super.initState();
-    int diff = (widget.maxValue - widget.minValue);
-    _value = ((widget.initialValue - widget.minValue) / diff) * 100.0;
+    _value = _toSliderValue(widget.initialValue);
+  }
+
+  @override
+  void didUpdateWidget(ControlSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The parent owns the value, so a change made elsewhere (a settings reset,
+    // a restored profile) must move the thumb rather than be ignored.
+    if (oldWidget.initialValue != widget.initialValue ||
+        oldWidget.minValue != widget.minValue ||
+        oldWidget.maxValue != widget.maxValue) {
+      _value = _toSliderValue(widget.initialValue);
+    }
+  }
+
+  double _toSliderValue(int value) {
+    final diff = widget.maxValue - widget.minValue;
+    return ((value - widget.minValue) / diff) * 100.0;
+  }
+
+  int _toSettingValue(double value) {
+    final diff = widget.maxValue - widget.minValue;
+    return (widget.minValue + (diff * value / 100)).toInt();
   }
 
   @override
@@ -45,9 +66,7 @@ class _ControlSliderState extends State<ControlSlider> {
           _value = value;
         });
 
-        int diff = widget.maxValue - widget.minValue;
-        int newValue = (widget.minValue + (diff * value / 100)).toInt();
-        widget.onChanged?.call(newValue);
+        widget.onChanged?.call(_toSettingValue(value));
       },
     );
   }

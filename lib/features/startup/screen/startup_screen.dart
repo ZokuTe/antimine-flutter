@@ -20,23 +20,28 @@ class _StartUpScreen extends State<StartUpScreen> {
   bool _initializationStarted = false;
 
   @override
-  Widget build(BuildContext context) {
-    // The first post-frame callback can observe a pre-layout window size (0x0
-    // on Android, 1x1 on desktop), which produced an invalid minefield. Build
-    // instead, where MediaQuery has been resolved, and only start once a real
-    // size is available.
-    final screenSize = MediaQuery.of(context).size;
-    if (!_initializationStarted &&
-        screenSize.width > 0 &&
-        screenSize.height > 0) {
-      _initializationStarted = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context.read<StartUpBloc>().initializeGame(screenSize: screenSize);
-        }
-      });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Runs after the first build with inherited widgets resolved, so
+    // MediaQuery has a real size (the first post-frame callback can observe a
+    // pre-layout 0x0 on Android or 1x1 on desktop, which produced an invalid
+    // minefield). It also re-runs on a metrics change, so a resize before the
+    // game starts is picked up rather than ignored.
+    if (_initializationStarted) {
+      return;
     }
 
+    final screenSize = MediaQuery.sizeOf(context);
+    if (screenSize.width <= 0 || screenSize.height <= 0) {
+      return;
+    }
+
+    _initializationStarted = true;
+    context.read<StartUpBloc>().initializeGame(screenSize: screenSize);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return BlocListener<StartUpBloc, StartupState>(
       listener: (context, state) {
         if (state.initialized) {

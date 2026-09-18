@@ -206,13 +206,17 @@ class SettingsManager {
   }
 
   void saveCameraState(Vector2 position, double zoom) async {
-    _cache = _cache?.copyWith(cameraPosition: position, cameraZoom: zoom);
+    // Capture the previous values first: comparing after assigning `_cache`
+    // would compare the new value against itself, so nothing would ever be
+    // written back.
+    final previous = _cache;
+    _cache = previous?.copyWith(cameraPosition: position, cameraZoom: zoom);
 
-    if (_cache?.cameraPosition != position) {
+    if (previous?.cameraPosition != position) {
       await repository.setDouble(SettingsKeys.cameraX, position.x);
       await repository.setDouble(SettingsKeys.cameraY, position.y);
     }
-    if (_cache?.cameraZoom != zoom) {
+    if (previous?.cameraZoom != zoom) {
       await repository.setDouble(SettingsKeys.cameraZoom, zoom);
     }
   }

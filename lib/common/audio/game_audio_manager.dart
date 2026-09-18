@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flame_audio/bgm.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/cupertino.dart';
@@ -38,29 +40,6 @@ class GameAudioManager {
 
   bool _disposed = false;
 
-  /// Every effect file the game can play.
-  static const List<String> effectFiles = [
-    GameAudio.bombExplosion,
-    GameAudio.menuClick,
-    GameAudio.menuClickAlt,
-    GameAudio.menuClickAlt2,
-    GameAudio.openArea0,
-    GameAudio.openArea1,
-    GameAudio.openArea2,
-    GameAudio.openArea3,
-    GameAudio.openMultiple0,
-    GameAudio.openMultiple1,
-    GameAudio.openMultiple2,
-    GameAudio.putFlag0,
-    GameAudio.putFlag1,
-    GameAudio.putFlag2,
-    GameAudio.revealMine0,
-    GameAudio.revealMine1,
-    GameAudio.revealMine2,
-    GameAudio.revealMineReload,
-    GameAudio.win,
-  ];
-
   Future<void> preLoad() async {
     final settings = settingsManager.cache;
     try {
@@ -79,27 +58,29 @@ class GameAudioManager {
 
   void playMusic({bool restart = false}) async {
     final settings = settingsManager.cache;
-    final currentState = bgm.audioPlayer.state;
-    if (settings.music && currentState != PlayerState.playing) {
-      try {
-        if (!restart && currentState == PlayerState.paused) {
-          await bgm.resume();
-        } else {
-          await bgm.play(GameAudio.music, volume: 0.5);
-        }
-      } catch (e) {
-        debugPrint('Error playing music: $e');
-      }
+    if (!settings.music) {
+      return;
     }
-  }
-
-  bool isMusicPlaying() {
-    return bgm.audioPlayer.state == PlayerState.playing;
+    if (!restart && bgm.isPlaying) {
+      return;
+    }
+    try {
+      // `pause` keeps the player loaded and its position, so a pause/resume
+      // cycle continues where it left off. Reaching for `play` here would
+      // release and re-source the track, restarting it from 0:00.
+      if (!restart && bgm.audioPlayer.state == PlayerState.paused) {
+        await bgm.resume();
+      } else {
+        await bgm.play(GameAudio.music, volume: 0.5);
+      }
+    } catch (e) {
+      debugPrint('Error playing music: $e');
+    }
   }
 
   void pauseMusic() async {
     try {
-      await bgm.stop();
+      await bgm.pause();
     } catch (e) {
       debugPrint('Error pausing music: $e');
     }
@@ -117,10 +98,6 @@ class GameAudioManager {
       GameAudio.openMultiple1,
       GameAudio.openMultiple2,
     ]),
-  );
-
-  void playFlag() => _play(
-    _pick([GameAudio.putFlag0, GameAudio.putFlag1, GameAudio.putFlag2]),
   );
 
   void playWin() => _play(GameAudio.win);
@@ -155,12 +132,13 @@ class GameAudioManager {
     // Random order, but never repeat the current choice back to back so
     // consecutive taps do not sound identical.
     final candidates = options.where((e) => e != _lastPlayed).toList();
-    final choice =
-        candidates.isEmpty
-            ? options.first
-            : candidates[DateTime.now().microsecond % candidates.length];
-    return choice;
+    if (candidates.isEmpty) {
+      return options.first;
+    }
+    return candidates[_random.nextInt(candidates.length)];
   }
+
+  static final Random _random = Random();
 
   String? _lastPlayed;
 

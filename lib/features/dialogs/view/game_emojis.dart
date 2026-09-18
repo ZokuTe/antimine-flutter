@@ -1,6 +1,6 @@
 class GameEmojis {
   /// Emojis used on victory.
-  static List<String> get goodEmojis => [
+  static const List<String> goodEmojis = [
     '🎉',
     '🎊',
     '🥳',
@@ -15,12 +15,10 @@ class GameEmojis {
     '🎖',
     '😋',
     '😛',
-    '😎',
-    '👏',
   ];
 
   /// Emojis used on defeat.
-  static List<String> get badEmojis => [
+  static const List<String> badEmojis = [
     '😭',
     '😢',
     '😞',

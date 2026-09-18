@@ -45,9 +45,11 @@ class HomeDifficultyPanel extends StatelessWidget {
                 icon: Icons.square_foot,
                 label: t.fixed_size,
               ),
-              Container(
+              Divider(
                 height: Spacing.x2,
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.x24),
+                thickness: Spacing.x2,
+                indent: Spacing.x24,
+                endIndent: Spacing.x24,
                 color: colorScheme.onSurface.withAlpha(_surfaceAlphaColor),
               ),
               ...{
@@ -66,9 +68,11 @@ class HomeDifficultyPanel extends StatelessWidget {
                   label: entry.key,
                 );
               }),
-              Container(
+              Divider(
                 height: Spacing.x2,
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.x24),
+                thickness: Spacing.x2,
+                indent: Spacing.x24,
+                endIndent: Spacing.x24,
                 color: colorScheme.onSurface.withAlpha(_surfaceAlphaColor),
               ),
               GameButton(

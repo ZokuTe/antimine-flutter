@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../common/utils/duration_ext.dart';
@@ -99,28 +97,23 @@ class StatsBloc extends Cubit<StatsState> {
     required Iterable<Stats> stats,
     required Difficulty? difficulty,
   }) {
-    final victories = stats.victories();
-    final totalMines = victories.sumMines();
-    final totalTimeVictories = victories.sumDuration();
-    final totalTime = stats.sumDuration();
-    final bestTime = victories.minDuration();
-    final openedCells = stats.sumOpenArea();
-    final averageTime = totalTimeVictories ~/ max(1, victories.length);
-    final winPercentage = ((victories.length / max(1, stats.length)) * 100);
+    final summary = StatsSummary.of(stats);
 
     return StatsBoard(
       difficulty: difficulty,
-      hasGamesPlayed: stats.isNotEmpty,
-      gamesPlayed: stats.length.toString(),
-      totalMines: totalMines.toString(),
-      totalTime: _formattedDuration(totalTime),
-      averageTime: _formattedDuration(averageTime),
-      bestTime: _formattedDuration(bestTime),
-      openedCells: openedCells.toString(),
+      hasGamesPlayed: summary.gamesPlayed > 0,
+      gamesPlayed: summary.gamesPlayed.toString(),
+      totalMines: summary.totalMines.toString(),
+      totalTime: _formattedDuration(summary.totalTime),
+      averageTime: _formattedDuration(summary.averageTime),
+      bestTime: _formattedDuration(summary.bestTime),
+      openedCells: summary.openedCells.toString(),
       winPercentage:
-          victories.isNotEmpty ? _toPercentage(winPercentage) : notApplicable,
-      victories: victories.length.toString(),
-      defeats: (stats.length - victories.length).toString(),
+          summary.victories > 0
+              ? _toPercentage(summary.winPercentage)
+              : notApplicable,
+      victories: summary.victories.toString(),
+      defeats: (summary.gamesPlayed - summary.victories).toString(),
     );
   }
 
