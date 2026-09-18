@@ -37,12 +37,12 @@ class GameRenderer extends FlameGame
     required this.areaSize,
     required this.settings,
   }) {
-    // Touching `gestureDetectors` builds the map (including the double-tap
-    // recognizer this class declares), so the entry can be dropped here when
-    // the control scheme has no use for the gesture.
-    if (!_usesDoubleTap) {
-      gestureDetectors.remove<DoubleTapGestureRecognizer>();
-    }
+    // `Game.initializeGestures` registers the double-tap recognizer because
+    // this class declares the mixin, so the map starts out containing it.
+    // Touching `gestureDetectors` builds that map; `_syncDoubleTapRegistration`
+    // then drops the entry if the scheme has no use for the gesture.
+    _doubleTapRegistered = true;
+    _syncDoubleTapRegistration();
   }
 
   final GameBloc gameBloc;
@@ -60,7 +60,10 @@ class GameRenderer extends FlameGame
   late ShareComponent shareComponent;
   late FlameMultiBlocProvider blocComponent;
 
-  /// Whether the active control scheme binds `doubleTap` to anything.
+  /// Whether the double-tap recognizer is currently registered.
+  bool _doubleTapRegistered = true;
+
+  /// Registers or drops the double-tap recognizer to match the active scheme.
   ///
   /// `DoubleTapGestureRecognizer` keeps the gesture arena open for
   /// [kDoubleTapTimeout] so it can tell a double tap from two single ones, and
@@ -68,9 +71,34 @@ class GameRenderer extends FlameGame
   /// double tap to the same action as an existing gesture, so the wait buys
   /// nothing; registering the recognizer only when the map actually uses
   /// double tap removes the delay without losing the gesture where it matters.
-  bool get _usesDoubleTap => GameInput.fromId(
-    settings.controlType,
-  ).inputMap.containsKey(InputType.doubleTap);
+  ///
+  /// The scheme can be changed while a game is running, so this is re-checked
+  /// on every state update rather than only at construction.
+  void _syncDoubleTapRegistration() {
+    final needed = GameInput.fromId(
+      settings.controlType,
+    ).inputMap.containsKey(InputType.doubleTap);
+
+    if (needed == _doubleTapRegistered) {
+      return;
+    }
+
+    if (needed) {
+      // Mirrors what `Game.initializeGestures` wires up for
+      // `DoubleTapDetector`, so a scheme switch re-enables the recognizer with
+      // exactly the callbacks it would have had at construction.
+      gestureDetectors.add(DoubleTapGestureRecognizer.new, (
+        DoubleTapGestureRecognizer instance,
+      ) {
+        instance.onDoubleTap = onDoubleTap;
+        instance.onDoubleTapDown = handleDoubleTapDown;
+        instance.onDoubleTapCancel = onDoubleTapCancel;
+      });
+    } else {
+      gestureDetectors.remove<DoubleTapGestureRecognizer>();
+    }
+    _doubleTapRegistered = needed;
+  }
 
   late bool isPortrait;
   late GameParams params;
@@ -137,6 +165,9 @@ class GameRenderer extends FlameGame
     this.isPortrait = isPortrait;
     this.params = params;
     this.appBarHeight = appBarHeight;
+    // The control scheme can be changed from the settings while a game is
+    // open, so the gesture set is re-checked whenever the game is rebuilt.
+    _syncDoubleTapRegistration();
   }
 
   @override
