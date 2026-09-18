@@ -9,7 +9,6 @@ import 'package:flame_bloc/flame_bloc.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../../common/models/game_settings.dart';
-import '../../../common/models/input/game_input.dart';
 import '../../../common/models/skins/skin.dart';
 import '../../../common/models/themes/game_theme.dart';
 import '../../../foundation/side_effect/side_effect_bloc.dart';
@@ -85,23 +84,31 @@ class GameRenderer extends FlameGame
   void update(double dt) {
     super.update(dt);
 
+    // Pause the loop once nothing has happened for a while. Without this the
+    // engine renders continuously even when the board is static, which keeps
+    // the CPU busy and heats the device.
     final lastInteractionTime = _lastInteractionTime;
-    if (lastInteractionTime != null) {
-      final diff = currentTime() - lastInteractionTime;
-      if (diff > _idleThreshold) {
-        _lastInteractionTime = null;
-        pauseEngine();
-        debugPrint('> Idle for $diff seconds, pausing engine');
-      }
-    } else if (paused) {
-      resumeEngine();
-      debugPrint('> Resuming engine');
+    if (lastInteractionTime == null) {
+      return;
+    }
+    final diff = currentTime() - lastInteractionTime;
+    if (diff > _idleThreshold) {
+      _lastInteractionTime = null;
+      pauseEngine();
+      debugPrint('> Idle for $diff seconds, pausing engine');
     }
   }
 
+  /// Marks the game as active and restarts the loop if it had stopped.
+  ///
+  /// Called from every input handler; without it a paused loop would never
+  /// process the next touch.
   void pauseEngineWhenIdle() {
-    resumeEngine();
     _lastInteractionTime = currentTime();
+    if (paused) {
+      resumeEngine();
+      debugPrint('> Resuming engine');
+    }
   }
 
   void updateGame(GameParams params, bool isPortrait, double appBarHeight) {
@@ -236,6 +243,11 @@ class GameRenderer extends FlameGame
     coverComponent.visible = true;
     groundComponent.visible = true;
     iconsComponent.visible = true;
+
+    // Arm the idle timer. update() only pauses once it has a timestamp, so
+    // without this a game that is started and then left alone would keep the
+    // loop running forever.
+    _lastInteractionTime = currentTime();
   }
 
   void _changeCameraZoom(double zoom) {
@@ -310,8 +322,11 @@ class GameRenderer extends FlameGame
   }
 
   @override
-  void onTapDown(TapDownEvent event) async {
-    resumeEngine();
+  void onTapDown(TapDownEvent event) {
+    // Route through the idle helper so the loop restarts *and* the idle timer
+    // is armed; a bare resume would leave it null and it would never pause
+    // again.
+    pauseEngineWhenIdle();
     final target = _getAreaCoordinates(event.localPosition);
 
     final minefield = gameBloc.state.minefield;
@@ -325,23 +340,12 @@ class GameRenderer extends FlameGame
     } else {
       hoverComponent.enabled = false;
     }
-
-    /// When using control switcher, we can trigger the action on tap down.
-    /// But, we need to wait a little bit to see if the user is moving the
-    /// camera or not.
-    final controlType = settings.controlType;
-    if (controlType == GameInput.type5.id) {
-      final lastInputPosition = _lastInputPosition;
-      await Future.delayed(const Duration(milliseconds: _tapMinDurationMs));
-      if (!_consumeInput && _lastInputPosition == lastInputPosition) {
-        _consumeTapUp(event.localPosition);
-        _consumeInput = true;
-      }
-    }
   }
 
   @override
   void onTapUp(TapUpEvent event) {
+    // A tap that completes without onTapCancel is a real tap, not a pan: the
+    // gesture recognizer only cancels once the pointer moves beyond its slop.
     _consumeTapUp(event.localPosition);
   }
 
@@ -472,5 +476,4 @@ class GameRenderer extends FlameGame
   static const double _maxZoom = 5.0;
   static const double _minZoom = 0.3;
   static const double _idleThreshold = 2.0;
-  static const int _tapMinDurationMs = 200;
 }
