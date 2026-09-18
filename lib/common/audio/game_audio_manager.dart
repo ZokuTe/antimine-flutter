@@ -107,29 +107,31 @@ class GameAudioManager {
 
   void playBombExplosion() => _play(GameAudio.bombExplosion);
 
-  void playOpenArea() => _play(_pick([
-    GameAudio.openArea0,
-    GameAudio.openArea1,
-    GameAudio.openArea2,
-    GameAudio.openArea3,
-    GameAudio.openMultiple0,
-    GameAudio.openMultiple1,
-    GameAudio.openMultiple2,
-  ]));
+  void playOpenArea() => _play(
+    _pick([
+      GameAudio.openArea0,
+      GameAudio.openArea1,
+      GameAudio.openArea2,
+      GameAudio.openArea3,
+      GameAudio.openMultiple0,
+      GameAudio.openMultiple1,
+      GameAudio.openMultiple2,
+    ]),
+  );
 
-  void playFlag() => _play(_pick([
-    GameAudio.putFlag0,
-    GameAudio.putFlag1,
-    GameAudio.putFlag2,
-  ]));
+  void playFlag() => _play(
+    _pick([GameAudio.putFlag0, GameAudio.putFlag1, GameAudio.putFlag2]),
+  );
 
   void playWin() => _play(GameAudio.win);
 
-  void playRevealMine() => _play(_pick([
-    GameAudio.revealMine0,
-    GameAudio.revealMine1,
-    GameAudio.revealMine2,
-  ]));
+  void playRevealMine() => _play(
+    _pick([
+      GameAudio.revealMine0,
+      GameAudio.revealMine1,
+      GameAudio.revealMine2,
+    ]),
+  );
 
   /// Releases every pooled player. Call when the game is torn down.
   Future<void> dispose() async {
@@ -153,9 +155,10 @@ class GameAudioManager {
     // Random order, but never repeat the current choice back to back so
     // consecutive taps do not sound identical.
     final candidates = options.where((e) => e != _lastPlayed).toList();
-    final choice = candidates.isEmpty
-        ? options.first
-        : candidates[DateTime.now().microsecond % candidates.length];
+    final choice =
+        candidates.isEmpty
+            ? options.first
+            : candidates[DateTime.now().microsecond % candidates.length];
     return choice;
   }
 
