@@ -116,7 +116,12 @@ class GameState extends Equatable {
     minefield,
     startDate,
     duration,
-    areas,
+    // Compared by identity, not by value. The clock ticks five times a second
+    // and every emit compares the whole state; a deep comparison would walk
+    // every area (and each area's neighbours) on each tick, which is enough to
+    // keep a core busy. `areas` is always replaced wholesale, never mutated in
+    // place, so identity is both sufficient and cheap.
+    _ListIdentity(areas),
     screenSize,
     cameraPosition,
     selectedAction,
@@ -128,4 +133,16 @@ class GameState extends Equatable {
     hintCount,
     isPreview,
   ];
+}
+
+/// Wraps a list so equality is decided by identity rather than by comparing
+/// every element. Used where a value comparison would be too expensive to run
+/// on every state change.
+class _ListIdentity extends Equatable {
+  const _ListIdentity(this.value);
+
+  final List<Area> value;
+
+  @override
+  List<Object?> get props => [identityHashCode(value)];
 }
