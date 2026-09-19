@@ -64,4 +64,4 @@ jobs:
             -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Build APK
-        run: flutter build apk --debug
+        run: flutter build apk --debug -v
