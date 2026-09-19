@@ -342,6 +342,46 @@ class GameRenderer extends FlameGame
     );
   }
 
+  /// [_getAreaCoordinates] 的逆变换：格子 → 窗口坐标。
+  ///
+  /// 刻意紧挨着正变换放。这一对映射分开写迟早会漂，而漂了的表现是光标指着
+  /// 一个格子、指令却落在另一个格子上，很难查。
+  ///
+  /// 返回格子的**左上角**：正变换里 `~/ areaSize` 的分界点正是这个位置，
+  /// 所以 `onTapDown` 里 `hoverComponent.position = target * areaSize` 用的是同一个点。
+  /// 要格子中心得自己加半个格。
+  Vector2 _getLocalPositionOfArea(Vector2 area) {
+    final minefield = gameBloc.state.minefield.vecSize;
+    final cameraFix = minefield * areaSize * 0.5;
+    final zoom = camera.viewfinder.zoom;
+    return (area * areaSize - cameraFix - cameraCenter.position) * zoom +
+        screenSize * 0.5;
+  }
+
+  /// 格子中心在窗口坐标系里的位置，直播覆盖层用它放高亮和出屏箭头。
+  ///
+  /// 坐标空间与 `onTapDown` 的 `event.localPosition` 一致，所以覆盖层可以
+  /// 直接拿它当 `Positioned` 的偏移用。
+  Offset screenCenterOfArea(int x, int y) {
+    final zoom = camera.viewfinder.zoom;
+    final topLeft = _getLocalPositionOfArea(
+      Vector2(x.toDouble(), y.toDouble()),
+    );
+    return Offset(
+      topLeft.x + areaSize * 0.5 * zoom,
+      topLeft.y + areaSize * 0.5 * zoom,
+    );
+  }
+
+  /// 一个格子在当前缩放下占多少像素。
+  double get areaScreenSize => areaSize * camera.viewfinder.zoom;
+
+  /// 覆盖层能不能安全地做坐标换算。
+  ///
+  /// `cameraCenter` 是 late 字段，`onLoad` 跑完之前访问会抛
+  /// LateInitializationError，所以外面的覆盖层必须先问这个，不能直接算。
+  bool get canProjectAreas => _engineReady;
+
   @override
   void onScaleStart(info) {
     pauseEngineWhenIdle();

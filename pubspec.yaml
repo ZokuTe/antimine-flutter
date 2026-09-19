@@ -25,6 +25,8 @@ dependencies:
   flame_bloc: ^1.12.8
   flame_audio: ^2.11.1
   equatable: ^2.0.7
+  # WBI 签名要算 md5（B 站 getDanmuInfo 不带签名会被风控拒）
+  crypto: ^3.0.6
   flutter_bloc: ^9.1.0
   confetti: ^0.8.0
   path_provider: ^2.1.5

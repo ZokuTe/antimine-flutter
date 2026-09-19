@@ -19,6 +19,7 @@ class StartupRoute extends StatelessWidget {
             globalSettingsBloc: context.read(),
             inAppUpdateManager: context.read(),
             saveFileManager: context.read(),
+            liveBloc: context.read(),
           ),
       child: const StartUpScreen(),
     );

@@ -21,6 +21,9 @@ import 'features/game/logic/minefield_solver.dart';
 import 'features/game/logic/native_minefield_creator.dart';
 import 'features/game/logic/random_minefield_creator.dart';
 import 'features/game/logic/randomness_manager.dart';
+import 'features/live/bloc/live_bloc.dart';
+import 'features/live/data/bilibili_danmaku_client.dart';
+import 'features/live/settings/live_settings_manager.dart';
 import 'foundation/io/background_image_manager.dart';
 import 'foundation/io/save_file_manager.dart';
 import 'foundation/io/share_image_manager.dart';
@@ -136,6 +139,21 @@ class DependencyInjection extends StatelessWidget {
               (context) => CustomBloc(
                 hashManager: context.read<HashManager>(),
                 settingsManager: context.read<SettingsManager>(),
+              ),
+        ),
+        Provider<LiveSettingsManager>(
+          create:
+              (context) => LiveSettingsManager(
+                repository: context.read<SettingsRepository>(),
+              ),
+        ),
+        // App 级：连接不随换局断开，游戏界面用 attach/detach 挂上来。
+        // 协议实现在进程内，没有外部进程要管。
+        BlocProvider<LiveBloc>(
+          create:
+              (context) => LiveBloc(
+                client: BilibiliDanmakuClient(),
+                settingsManager: context.read<LiveSettingsManager>(),
               ),
         ),
       ],

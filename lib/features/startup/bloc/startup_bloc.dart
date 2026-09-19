@@ -10,6 +10,7 @@ import '../../../common/update/in_app_update_manager.dart';
 import '../../../foundation/i18n/translations.g.dart';
 import '../../../foundation/io/save_file_manager.dart';
 import '../../game/logic/dimension_manager.dart';
+import '../../live/bloc/live_bloc.dart';
 import 'startup_state.dart';
 
 class StartUpBloc extends Cubit<StartupState> {
@@ -21,6 +22,7 @@ class StartUpBloc extends Cubit<StartupState> {
     required this.gameThemeManager,
     required this.inAppUpdateManager,
     required this.saveFileManager,
+    required this.liveBloc,
   }) : super(const StartupState(initialized: false, openGameDirectly: false));
 
   final GameAudioManager gameAudioManager;
@@ -30,6 +32,7 @@ class StartUpBloc extends Cubit<StartupState> {
   final GameThemeManager gameThemeManager;
   final InAppUpdateManager inAppUpdateManager;
   final SaveFileManager saveFileManager;
+  final LiveBloc liveBloc;
 
   void initializeGame({required Size screenSize}) async {
     await settingsManager.init();
@@ -38,6 +41,11 @@ class StartUpBloc extends Cubit<StartupState> {
     await settingsManager.reload(
       deviceLocale: AppLocaleUtils.findDeviceLocale(),
     );
+
+    // 直播开关存在 SharedPreferences 里，必须等 settingsManager.init() 跑完再读。
+    // 放到 AntimineGame.initState 里会撞上 SettingsRepository 的 `_prefs`
+    // 还没初始化，抛 LateInitializationError。
+    await liveBloc.load();
 
     gameThemeManager.init();
     globalSettingsBloc

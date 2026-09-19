@@ -11,6 +11,10 @@ import '../../../foundation/i18n/translations.g.dart';
 import '../../../foundation/ui/frosted_theme.dart';
 import '../../../foundation/ui/spacing.dart';
 import '../bloc/settings_bloc.dart';
+import '../../live/bloc/live_bloc.dart';
+import '../../live/bloc/live_state.dart';
+import '../../live/live_support.dart';
+import '../../live/widgets/live_settings_section.dart';
 import '../models/settings_item.dart';
 import 'settings_action_item.dart';
 import 'settings_panel.dart';
@@ -164,6 +168,31 @@ class SettingsList extends StatelessWidget {
                   ),
                 ],
               ),
+              // 直播联动只做桌面端，手机和 web 上连入口都不显示。
+              if (isLiveSupported) ...[
+                const SizedBox(height: Spacing.x16),
+                BlocBuilder<LiveBloc, LiveState>(
+                  builder:
+                      (context, liveState) => SettingsPanel(
+                        title: t.live,
+                        children: [
+                          SettingsItem(
+                            title: t.live_enable,
+                            value: liveState.enabled,
+                            onChanged: context.read<LiveBloc>().setEnabled,
+                          ),
+                          // 关掉之后访客（没戴牌子、或者戴别家牌子）也能操作共享光标。
+                          // 不随上一项置灰：先设好再打开也行。
+                          SettingsItem(
+                            title: t.live_require_medal,
+                            value: liveState.requireMedal,
+                            onChanged: context.read<LiveBloc>().setRequireMedal,
+                          ),
+                        ],
+                        extra: const [LiveSettingsSection()],
+                      ),
+                ),
+              ],
               const SizedBox(height: Spacing.x24),
             ],
           ),

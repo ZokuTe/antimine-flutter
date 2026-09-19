@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,10 @@ import '../../../foundation/side_effect/side_effect_bloc.dart';
 import '../../../foundation/side_effect/side_effect_event.dart';
 import '../../dialogs/game_over_dialog.dart';
 import '../../dialogs/victory_dialog.dart';
+import '../../live/bloc/live_bloc.dart';
+import '../../live/bloc/live_state.dart';
+import '../../live/live_support.dart';
+import '../../live/widgets/live_cursor_overlay.dart';
 import '../../share/share_game_modal.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_side_effect.dart';
@@ -48,19 +54,51 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  late final GameBloc _gameBloc;
+  late final LiveBloc _liveBloc;
   late GameRenderer _gameRenderer;
+  StreamSubscription<GameState>? _gameStates;
 
   @override
   void initState() {
     super.initState();
+    // 提前抓好引用：dispose 里再 context.read 已经太晚，那时 element 已离开树，
+    // 向上查祖先会失败。
+    _gameBloc = context.read<GameBloc>();
+    _liveBloc = context.read<LiveBloc>();
+
     _gameRenderer = GameRenderer(
       skin: widget.skin,
       theme: widget.theme,
       areaSize: widget.dimensionManager.calcAreaSize(),
-      gameBloc: context.read<GameBloc>(),
+      gameBloc: _gameBloc,
       sideEffectBloc: context.read<SideEffectBloc>(),
       settings: widget.settings,
     );
+
+    // 把盘面交给直播那边：动作出口 + 当前尺寸。
+    // 连接本身是 App 级的，换局不会断。
+    _liveBloc.attach(
+      applyAction: _gameBloc.applyLiveAction,
+      width: _gameBloc.state.minefield.width,
+      height: _gameBloc.state.minefield.height,
+    );
+
+    // 换局或换自定义尺寸之后，光标得跟着收进新盘面，否则会停在一个不存在的
+    // 格子上，之后所有指令都落在盘外。
+    _gameStates = _gameBloc.stream.listen((gameState) {
+      _liveBloc.updateBounds(
+        width: gameState.minefield.width,
+        height: gameState.minefield.height,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _gameStates?.cancel();
+    _liveBloc.detach();
+    super.dispose();
   }
 
   @override
@@ -119,6 +157,29 @@ class _GameScreenState extends State<GameScreen> {
                 return Stack(
                   children: [
                     GameWidget(game: _gameRenderer),
+                    // 直播覆盖层：共享光标 + 出屏箭头。整层 IgnorePointer，
+                    // 主播自己的点击原样穿透到下面的 GameWidget。
+                    if (isLiveSupported)
+                      BlocBuilder<LiveBloc, LiveState>(
+                        builder: (context, liveState) {
+                          final cursor = liveState.cursor;
+                          if (cursor == null ||
+                              !liveState.isConnected ||
+                              state.params.isPreview) {
+                            return const SizedBox.shrink();
+                          }
+                          return LiveCursorOverlay(
+                            renderer: _gameRenderer,
+                            cursor: cursor,
+                            // 贴在真正边缘的箭头会被 AppBar 盖掉
+                            inset: EdgeInsets.only(
+                              top:
+                                  kToolbarHeight +
+                                  MediaQuery.paddingOf(context).top,
+                            ),
+                          );
+                        },
+                      ),
                     const GameLoadingIndicator(),
                     if (!state.params.isPreview) const InitialLabel(),
                     if (!state.params.isPreview ||

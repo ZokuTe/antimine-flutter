@@ -361,7 +361,7 @@ class GameBloc extends Cubit<GameState> {
     }
   }
 
-  void _handleAction(Action action, Vector2 position) {
+  Future<void> _handleAction(Action action, Vector2 position) async {
     final status = state.status;
 
     if (status == GameStatus.notStarted) {
@@ -374,21 +374,32 @@ class GameBloc extends Cubit<GameState> {
 
     switch (action) {
       case Action.open:
-        _openAt(position);
-        break;
+        await _openAt(position);
       case Action.switchMark:
-        _switchMarkAt(position);
-        break;
+        await _switchMarkAt(position);
       case Action.flag:
-        _switchOrSetMarkAt(position, Mark.flag);
-        break;
+        await _switchOrSetMarkAt(position, Mark.flag);
       case Action.question:
-        _switchOrSetMarkAt(position, Mark.question);
-        break;
+        await _switchOrSetMarkAt(position, Mark.question);
     }
   }
 
-  void _openAt(Vector2 position) async {
+  /// 直播弹幕驱动的一次操作。
+  ///
+  /// 复用 [_handleAction]，所以 `notStarted` 强制开格、对局结束早退、自动插旗、
+  /// 连通区刷新这些判定和主播自己点一模一样——弹幕不该有能力绕过规则。
+  ///
+  /// 返回的 Future 在这次操作真正落定之后才完成（包括内部那次 `await`）。
+  /// 直播那边据此**串行**下发：一批弹幕必须一条一条应用，否则会在 _updateState
+  /// 的 await 窗口里互相插队，某次 emit 会带上过期的 areas。
+  Future<void> applyLiveAction(Action action, Vector2 position) {
+    if (state.isPreview) {
+      return Future.value();
+    }
+    return _handleAction(action, position);
+  }
+
+  Future<void> _openAt(Vector2 position) async {
     if (position.x < 0 ||
         position.y < 0 ||
         position.x >= state.minefield.width ||
@@ -443,7 +454,7 @@ class GameBloc extends Cubit<GameState> {
         minefieldHandler.refreshForms();
       }
 
-      _updateState(
+      await _updateState(
         advanceTurn: true,
         position: position,
         startDate: startNow ? dateTimeProvider.nowInMilliseconds() : null,
@@ -451,13 +462,13 @@ class GameBloc extends Cubit<GameState> {
     }
   }
 
-  void _switchOrSetMarkAt(Vector2 position, Mark mark) {
+  Future<void> _switchOrSetMarkAt(Vector2 position, Mark mark) {
     if (position.x < 0 ||
         position.y < 0 ||
         position.x >= state.minefield.width ||
         position.y >= state.minefield.height) {
       // Out of bounds
-      return;
+      return Future.value();
     }
 
     minefieldHandler.consume(state);
@@ -484,16 +495,16 @@ class GameBloc extends Cubit<GameState> {
 
     audioManager.playOpenArea();
 
-    _updateState(advanceTurn: false, position: position);
+    return _updateState(advanceTurn: false, position: position);
   }
 
-  void _switchMarkAt(Vector2 position) {
+  Future<void> _switchMarkAt(Vector2 position) {
     if (position.x < 0 ||
         position.y < 0 ||
         position.x >= state.minefield.width ||
         position.y >= state.minefield.height) {
       // Out of bounds
-      return;
+      return Future.value();
     }
 
     minefieldHandler.consume(state);
@@ -523,11 +534,13 @@ class GameBloc extends Cubit<GameState> {
         minefieldHandler.refreshForms();
       }
 
-      _updateState(advanceTurn: false, position: position);
+      return _updateState(advanceTurn: false, position: position);
     }
+
+    return Future.value();
   }
 
-  void _updateState({
+  Future<void> _updateState({
     required bool advanceTurn,
     Vector2? position,
     int? lastHintUsed,
