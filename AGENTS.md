@@ -196,6 +196,37 @@ gh release download v26.9.18-b --repo ZokuTe/antimine-flutter \
 sha256sum /tmp/verify.apk
 ```
 
+### 8. Build the Windows package (optional)
+
+Flutter refuses to build Windows binaries on non-Windows hosts, so the
+Windows package comes from the manual CI workflow (`.github/workflows/windows.yml`).
+Trigger it after step 5, once the release commit is on `origin/main`, so the
+built version matches the tag:
+
+```sh
+gh workflow run windows.yml --repo ZokuTe/antimine-flutter
+run_id=$(gh run list --workflow=windows.yml --limit 1 --json databaseId \
+  -q '.[0].databaseId' --repo ZokuTe/antimine-flutter)
+gh run watch "$run_id" --repo ZokuTe/antimine-flutter
+gh run download "$run_id" --name antimine-windows-x64 --dir /tmp/win \
+  --repo ZokuTe/antimine-flutter
+```
+
+The workflow builds `flutter build windows --release`, zips
+`build/windows/x64/runner/Release`, prints the SHA-256 of the zip in the
+`Package` step of the build log, and uploads the zip as an artifact
+(retained 30 days). Verify the hash locally, then attach the zip to the
+release created in step 6:
+
+```sh
+sha256sum /tmp/win/antimine-windows-x64.zip
+gh release upload v26.9.18-b /tmp/win/antimine-windows-x64.zip \
+  --repo ZokuTe/antimine-flutter
+```
+
+If the Windows zip was uploaded, list it (and its SHA-256) in the release
+notes.
+
 ## Notes on the code
 
 - `android/key.properties`, `android/app/antimine-release.p12` and
