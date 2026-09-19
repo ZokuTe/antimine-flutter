@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -36,11 +38,14 @@ class SettingsList extends StatelessWidget {
               SettingsPanel(
                 title: t.general,
                 children: [
-                  SettingsItem(
-                    title: t.vibration,
-                    value: settings.vibration,
-                    onChanged: bloc.setVibration,
-                  ),
+                  // The vibration plugin is only implemented on Android and
+                  // iOS, so the toggle is hidden on desktop platforms.
+                  if (Platform.isAndroid || Platform.isIOS)
+                    SettingsItem(
+                      title: t.vibration,
+                      value: settings.vibration,
+                      onChanged: bloc.setVibration,
+                    ),
                   SettingsItem(
                     title: t.sound_effects,
                     value: settings.soundEffects,
