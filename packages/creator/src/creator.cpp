@@ -435,7 +435,30 @@ void mine_perturbation(
     delta_todo = -1;
     delta_set = +1;
   }
-  changes.reserve(2 * todo_list.size());
+  /*
+   * 下面收集到的改动**只收集不应用**，而且是有意为之。
+   *
+   * 上游是把它们写进 ctx.changes 的，但只 reserve 没 resize —— reserve 只改
+   * capacity，size 仍是 0。后果有两条：
+   *
+   *   (a) `changes[index] = pert` 是越界写，属于 UB。GCC 16 默认开
+   *       _GLIBCXX_ASSERTIONS，会直接 abort（就是
+   *       "Assertion '__n < this->size()' failed" 那个崩溃）。
+   *   (b) 下面按 size() 迭代的 `for (auto &change : changes)` 一次都不执行，
+   *       扰动从来没被真正应用过；于是 try_solve_minefield 里那句
+   *       `if (!context.changes.empty())` 恒为假，求解器扰动之后的回馈记账
+   *       也从来没跑过。
+   *
+   * 也就是说 no-guess 现在完全靠 try_solve_minefield 的 do/while 重新生成雷区
+   * 兜底，扰动这条分支是死的。
+   *
+   * 这里只修掉越界写这个 UB，**不改变现状**：收集结果放进一个局部缓冲然后丢掉，
+   * ctx.changes 保持为空。让扰动真正生效等于让一段从未执行过的代码开始运行，
+   * 会改变雷区生成的形状，连带影响分享用的 hash —— 那是另一个独立的决定，
+   * 不该混在修崩溃里做。收集逻辑原样留着，将来要启用，把它接回 ctx.changes
+   * 并 resize 即可。
+   */
+  std::vector<perturbation> discarded;
   for (index = 0; index < todo_list.size(); index++)
   {
     const auto id = todo_list[index];
@@ -443,7 +466,7 @@ void mine_perturbation(
         .x = square_list[id].x,
         .y = square_list[id].y,
         .delta = delta_todo};
-    changes[index] = pert;
+    discarded.push_back(pert);
   }
 
   // now index == todo_list.size()
@@ -457,7 +480,7 @@ void mine_perturbation(
           .x = set_item % ctx.width,
           .y = set_item / ctx.width,
           .delta = delta_set};
-      changes[index] = pert;
+      discarded.push_back(pert);
       index++;
     }
   }
@@ -476,7 +499,7 @@ void mine_perturbation(
                 .x = static_cast<size_t>(setx + dx),
                 .y = static_cast<size_t>(sety + dy),
                 .delta = delta_set};
-            changes[index] = pert;
+            discarded.push_back(pert);
             index++;
           }
         }
@@ -498,7 +521,7 @@ void mine_perturbation(
                 .x = x,
                 .y = y,
                 .delta = delta_set};
-            changes[index] = pert;
+            discarded.push_back(pert);
             index++;
           }
         }
