@@ -9,6 +9,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Oracle JDK hits a cgroup-detection NPE on GitHub-hosted runners
+      # (jdk.internal.platform.CgroupInfo.getMountPoint), surfacing as an
+      # ExceptionInInitializerError in arbitrary Gradle tasks. Disable the
+      # JVM's container support detection.
+      JAVA_TOOL_OPTIONS: "-XX:-UseContainerSupport"
 
     steps:
       - name: Checkout Repository
@@ -52,16 +58,5 @@ jobs:
       - name: Unit tests
         run: flutter test
 
-      - name: Create Debug Keystore
-        # AGP 9 no longer auto-generates the debug keystore, and a fresh CI
-        # runner has none, so validateSigningDebug would fail. Create it with
-        # the standard debug credentials.
-        run: |
-          keytool -genkeypair -v -storetype PKCS12 \
-            -keystore "$HOME/.android/debug.keystore" \
-            -alias androiddebugkey -storepass android -keypass android \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US"
-
       - name: Build APK
-        run: flutter build apk --debug -v
+        run: flutter build apk --debug
