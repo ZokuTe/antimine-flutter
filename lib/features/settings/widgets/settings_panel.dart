@@ -27,31 +27,38 @@ class SettingsPanel extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         child: GameContainer(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                  top: Spacing.x16,
-                  left: Spacing.x8,
-                  bottom: Spacing.x8,
-                ),
-                child: Text(
-                  title.toUpperCase(),
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+          // GameContainer 画了一层带背景色的 DecoratedBox，而 ListTile 会把水波纹
+          // 和背景画到**最近的 Material** 上。不隔一层的话它们会被那层背景盖掉，
+          // debug 下每一行都会报一次「ListTile ... may be invisible」。
+          // 透明 Material 给它们一个正确的落点，又不挡住 GameContainer 的底色。
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: Spacing.x16,
+                    left: Spacing.x8,
+                    bottom: Spacing.x8,
+                  ),
+                  child: Text(
+                    title.toUpperCase(),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              ...children.map(
-                (e) => SettingsSwitchItem(
-                  title: e.title,
-                  value: e.value,
-                  onChanged: e.onChanged,
+                ...children.map(
+                  (e) => SettingsSwitchItem(
+                    title: e.title,
+                    value: e.value,
+                    onChanged: e.onChanged,
+                  ),
                 ),
-              ),
-              ...?extra,
-            ],
+                ...?extra,
+              ],
+            ),
           ),
         ),
       ),
