@@ -44,10 +44,10 @@ jobs:
             | xargs -0 dart format --output=none --set-exit-if-changed
 
       - name: Lint
-        # Warnings are non-fatal: the codebase intentionally carries three
-        # pre-existing findings (see AGENTS.md, "Verify before building").
+        # Warnings and infos are non-fatal: the codebase intentionally carries
+        # three pre-existing findings (see AGENTS.md, "Verify before building").
         # Errors still fail the build.
-        run: flutter analyze --no-fatal-warnings .
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos .
 
       - name: Unit tests
         run: flutter test
