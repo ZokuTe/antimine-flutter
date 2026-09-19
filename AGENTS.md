@@ -78,6 +78,28 @@ independently of the letter.
 
 ## Release process
 
+### Asset naming and CPU architectures
+
+Every release asset must state the platform and the CPU architecture it
+runs on. Name assets `antimine-<version>-<platform>-<arch>.<ext>` and list
+the same architectures in the release notes:
+
+| Platform | Asset | Architectures shipped |
+| --- | --- | --- |
+| Android | `antimine-<version>-android-<arch>.apk` | `arm64`, `x86_64` |
+| Windows | `antimine-<version>-windows-<arch>.zip` | `x86_64` |
+
+Architecture strings follow what the platform itself reports:
+
+- Android: derive them from `aapt dump badging` `native-code:`: `arm64-v8a`
+  -> `arm64`, `x86_64` -> `x86_64`. If a 32-bit build is ever shipped,
+  `armeabi-v7a` -> `armeabi-v7a`.
+- Windows: the only buildable target is `x86_64`.
+
+The release notes must include a table mapping each asset to the devices it
+covers (Android `arm64` = virtually all phones, Android `x86_64` =
+emulators, Windows `x86_64` = regular PCs).
+
 ### 1. Bump the version
 
 Edit `pubspec.yaml`. The revision letter and the build number both change;
@@ -125,28 +147,50 @@ in `native_minefield_creator.dart`, two deprecated `Radio` members in
 `language_screen.dart`). These are expected; do not "fix" them as part of an
 unrelated change.
 
-### 3. Build
+### 3. Build the APKs
 
 ```sh
-flutter build apk --release
+flutter build apk --release --split-per-abi
 ```
 
-Output: `build/app/outputs/flutter-apk/app-release.apk`.
+`--split-per-abi` produces one APK per CPU architecture in
+`build/app/outputs/flutter-apk/`:
 
-### 4. Verify the artifact
+- `app-arm64-v8a-release.apk`
+- `app-armeabi-v7a-release.apk`
+- `app-x86_64-release.apk`
+
+Copy the architectures being released into their asset names (see "Asset
+naming and CPU architectures" above):
+
+```sh
+mkdir -p "/tmp/release-26.9.19-a"
+cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+  /tmp/release-26.9.19-a/antimine-26.9.19-a-android-arm64.apk
+cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
+  /tmp/release-26.9.19-a/antimine-26.9.19-a-android-x86_64.apk
+```
+
+`armeabi-v7a` is built but not released unless needed.
+
+### 4. Verify the APKs
 
 ```sh
 export PATH="/home/zokute/Android/Sdk/build-tools/36.0.0:$PATH"
-APK=build/app/outputs/flutter-apk/app-release.apk
 
-aapt dump badging "$APK" | grep '^package:'   # versionCode / versionName
-apksigner verify --print-certs "$APK"         # must not be a debug key
-zipalign -c -P 16 -v 4 "$APK"                 # must print "Verification successful"
-sha256sum "$APK"
+for APK in /tmp/release-26.9.19-a/*.apk; do
+  echo "== $APK =="
+  aapt dump badging "$APK" | grep '^package:'     # versionCode / versionName
+  aapt dump badging "$APK" | grep 'native-code:'  # exactly one ABI
+  apksigner verify --print-certs "$APK"           # must not be a debug key
+  zipalign -c -P 16 -v 4 "$APK"                   # "Verification successful"
+  sha256sum "$APK"
+done
 ```
 
-Expect `targetSdkVersion:'36'`, `minSdkVersion 24`, and ABIs
-`arm64-v8a armeabi-v7a x86_64`.
+Expect `targetSdkVersion:'36'` and `minSdkVersion 24`. Each APK's
+`native-code:` line must contain exactly one ABI and match the architecture
+in its file name (`'arm64-v8a'` for `-arm64`, `'x86_64'` for `-x86_64`).
 
 `apksigner` must report the release certificate:
 
@@ -169,63 +213,67 @@ git tag -a v26.9.18-b -m "Antimine 26.9.18-b"
 git push origin v26.9.18-b
 ```
 
-### 6. Create the release
-
-```sh
-gh release create v26.9.18-b \
-  build/app/outputs/flutter-apk/app-release.apk \
-  --repo ZokuTe/antimine-flutter \
-  --title "Antimine 26.9.18-b — Android 16 build" \
-  --notes-file /tmp/release-notes.md \
-  --latest
-```
-
-The notes should include the install instructions, the SHA-256 of the APK, the
-requirements, and what changed. Use `--latest` so it becomes the recommended
-download.
-
-### 7. Confirm the upload
-
-Download the asset again and compare hashes. **Do this as a single sequential
-command** — two concurrent downloads writing the same file will interleave and
-produce a bogus mismatch.
-
-```sh
-gh release download v26.9.18-b --repo ZokuTe/antimine-flutter \
-  --pattern "app-release.apk" --output /tmp/verify.apk --clobber
-sha256sum /tmp/verify.apk
-```
-
-### 8. Build the Windows package (optional)
+### 6. Build the Windows package
 
 Flutter refuses to build Windows binaries on non-Windows hosts, so the
-Windows package comes from the manual CI workflow (`.github/workflows/windows.yml`).
-Trigger it after step 5, once the release commit is on `origin/main`, so the
-built version matches the tag:
+Windows package comes from the manual CI workflow
+(`.github/workflows/windows.yml`). Trigger it after step 5, once the release
+commit is on `origin/main`, so the built version matches the tag:
 
 ```sh
 gh workflow run windows.yml --repo ZokuTe/antimine-flutter
 run_id=$(gh run list --workflow=windows.yml --limit 1 --json databaseId \
   -q '.[0].databaseId' --repo ZokuTe/antimine-flutter)
 gh run watch "$run_id" --repo ZokuTe/antimine-flutter
-gh run download "$run_id" --name antimine-windows-x64 --dir /tmp/win \
+gh run download "$run_id" --name antimine-windows-x86_64 --dir /tmp/win \
   --repo ZokuTe/antimine-flutter
 ```
 
 The workflow builds `flutter build windows --release`, zips
 `build/windows/x64/runner/Release`, prints the SHA-256 of the zip in the
 `Package` step of the build log, and uploads the zip as an artifact
-(retained 30 days). Verify the hash locally, then attach the zip to the
-release created in step 6:
+(retained 30 days). Rename it into the release name and verify the hash
+against the build log:
 
 ```sh
-sha256sum /tmp/win/antimine-windows-x64.zip
-gh release upload v26.9.18-b /tmp/win/antimine-windows-x64.zip \
-  --repo ZokuTe/antimine-flutter
+cp /tmp/win/antimine-windows-x86_64.zip \
+  /tmp/release-26.9.19-a/antimine-26.9.19-a-windows-x86_64.zip
+sha256sum /tmp/release-26.9.19-a/antimine-26.9.19-a-windows-x86_64.zip
 ```
 
-If the Windows zip was uploaded, list it (and its SHA-256) in the release
-notes.
+### 7. Create the release
+
+```sh
+gh release create v26.9.19-a \
+  /tmp/release-26.9.19-a/antimine-26.9.19-a-android-arm64.apk \
+  /tmp/release-26.9.19-a/antimine-26.9.19-a-android-x86_64.apk \
+  /tmp/release-26.9.19-a/antimine-26.9.19-a-windows-x86_64.zip \
+  --repo ZokuTe/antimine-flutter \
+  --title "Antimine 26.9.19-a — Android 16 (arm64, x86_64) + Windows x86_64" \
+  --notes-file /tmp/release-notes.md \
+  --latest
+```
+
+The notes must include the install instructions, the SHA-256 of every
+asset, the requirements, the CPU-architecture table (see "Asset naming and
+CPU architectures"), and what changed. Use `--latest` so it becomes the
+recommended download.
+
+### 8. Confirm the upload
+
+Download every asset again and compare hashes. **Run the downloads
+sequentially** — concurrent downloads writing the same file will interleave
+and produce a bogus mismatch.
+
+```sh
+for ASSET in antimine-26.9.19-a-android-arm64.apk \
+             antimine-26.9.19-a-android-x86_64.apk \
+             antimine-26.9.19-a-windows-x86_64.zip; do
+  gh release download v26.9.19-a --repo ZokuTe/antimine-flutter \
+    --pattern "$ASSET" --output "/tmp/verify-$ASSET" --clobber
+  sha256sum "/tmp/verify-$ASSET"
+done
+```
 
 ## Notes on the code
 
