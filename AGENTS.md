@@ -239,3 +239,7 @@ notes.
   `dart run slang`. Missing keys fall back to the base locale, so a new string
   only needs to be added to `strings.i18n.json` (and any language being
   translated).
+- `windows-latest` ships Visual Studio 2026, whose MSVC rejects the
+  `<experimental/coroutine>` header used by `audioplayers_windows` < 4.4.1
+  (error C2338). Keep `audioplayers_windows` at 4.4.1+ (currently pulled in
+  via `audioplayers` 6.8.1) or the Windows CI build breaks.
